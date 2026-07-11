@@ -7,6 +7,8 @@
 
 .canvas-library {
   z-index: 2;
+  min-height: 0;
+  overflow-y: auto;
   padding: 14px;
   background: #ffffff;
   border-right: 1px solid #d8ddd9;

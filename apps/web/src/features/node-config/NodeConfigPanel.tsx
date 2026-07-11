@@ -34,14 +34,17 @@ function NodeConfigEditor({
     JSON.stringify(node.config, null, 2),
   );
   const [issues, setIssues] = useState<ConfigIssue[]>([]);
+  const [applied, setApplied] = useState(false);
 
   const validate = () => {
     try {
       const parsed = JSON.parse(draft) as unknown;
       const result = validateNodeConfig(node.kind, parsed);
       setIssues(result.issues);
+      setApplied(result.valid);
       if (result.valid) onChange(node.id, result.value);
     } catch (error) {
+      setApplied(false);
       setIssues([
         {
           path: 'config',
@@ -67,10 +70,16 @@ function NodeConfigEditor({
       <textarea
         aria-invalid={issues.length > 0}
         id="node-config-json"
-        onChange={(event) => setDraft(event.target.value)}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          setApplied(false);
+        }}
         spellCheck={false}
         value={draft}
       />
+      <div className="config-status" role="status">
+        {applied ? '配置已应用' : '编辑后应用以验证配置'}
+      </div>
       {issues.length > 0 && (
         <ul className="config-issues" aria-label="配置错误">
           {issues.map((issue) => (

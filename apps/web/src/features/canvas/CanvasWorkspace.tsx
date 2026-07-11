@@ -35,14 +35,71 @@ const nodeTemplates = [
     },
   },
   {
+    kind: 'transform.select',
+    label: '选择与重命名',
+    config: {
+      columns: [{ sourceColumnId: 'column-1', outputName: 'Column' }],
+    },
+  },
+  {
+    kind: 'transform.cast',
+    label: '类型转换',
+    config: {
+      rules: [
+        {
+          columnId: 'column-1',
+          targetType: 'string',
+          onError: 'fail',
+        },
+      ],
+    },
+  },
+  {
     kind: 'transform.filter',
     label: '筛选',
     config: { predicate: { type: 'literal', value: true } },
   },
   {
+    kind: 'transform.derive',
+    label: '计算字段',
+    config: {
+      outputName: 'Calculated',
+      expression: { type: 'literal', value: null },
+    },
+  },
+  {
+    kind: 'transform.sort',
+    label: '排序',
+    config: {
+      rules: [{ columnId: 'column-1', direction: 'asc', nulls: 'last' }],
+    },
+  },
+  {
+    kind: 'transform.deduplicate',
+    label: '去重',
+    config: { columnIds: ['column-1'], keep: 'first' },
+  },
+  {
+    kind: 'aggregate.group',
+    label: '分组统计',
+    config: {
+      groupBy: [],
+      aggregates: [{ operation: 'count', outputName: 'Count' }],
+    },
+  },
+  {
     kind: 'output.csv',
     label: 'CSV 输出',
     config: { delimiter: ',', includeHeader: true, fileName: 'output.csv' },
+  },
+  {
+    kind: 'output.json',
+    label: 'JSON 输出',
+    config: {
+      shape: 'array-of-objects',
+      pretty: true,
+      fileName: 'output.json',
+    },
   },
 ] as const;
 
