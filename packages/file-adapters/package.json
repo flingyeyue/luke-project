@@ -19,6 +19,10 @@
     "./xlsx": {
       "types": "./src/xlsx.ts",
       "import": "./src/xlsx.ts"
+    },
+    "./project": {
+      "types": "./src/project.ts",
+      "import": "./src/project.ts"
     }
   },
   "scripts": {
