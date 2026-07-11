@@ -28,6 +28,7 @@ export function CsvRunControls({
   const edges = useCanvasStore((state) => state.edges);
   const addNode = useCanvasStore((state) => state.addNode);
   const updateNodeConfig = useCanvasStore((state) => state.updateNodeConfig);
+  const setNodeStatus = useCanvasStore((state) => state.setNodeStatus);
   const workerRef = useRef<Worker | undefined>(undefined);
   const runRef = useRef<{ runId: string; nodeId: string } | undefined>(
     undefined,
@@ -50,13 +51,18 @@ export function CsvRunControls({
       if (!parsed.success) return;
       const event = parsed.data;
       onEventsChange([event]);
-      if (event.type === 'run-started') setStatus('解析中');
+      if (event.type === 'run-started') {
+        setStatus('解析中');
+        if (runRef.current) setNodeStatus(runRef.current.nodeId, 'running');
+      }
       if (event.type === 'node-result') {
         onDiagnosticsChange(event.result.diagnostics);
+        setNodeStatus(event.result.nodeId, event.result.status);
       }
       if (event.type === 'run-failed') {
         setStatus('运行失败');
         onDiagnosticsChange(event.diagnostics);
+        if (runRef.current) setNodeStatus(runRef.current.nodeId, 'failed');
       }
       if (event.type === 'run-completed' && runRef.current) {
         setStatus(event.summary.status === 'warning' ? '完成，有警告' : '完成');
@@ -144,6 +150,7 @@ export function CsvRunControls({
     };
     const runId = crypto.randomUUID();
     runRef.current = { runId, nodeId: csvNode.id };
+    setNodeStatus(csvNode.id, 'queued');
     onEventsChange([]);
     onDiagnosticsChange([]);
     onBatchChange(undefined);

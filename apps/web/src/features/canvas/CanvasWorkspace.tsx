@@ -108,16 +108,30 @@ function DataNode({ data, selected }: NodeProps<CanvasNode>) {
   const isOutput = data.kind.startsWith('output.');
 
   return (
-    <div className={`data-node${selected ? ' is-selected' : ''}`}>
-      {!isInput && <Handle type="target" position={Position.Left} />}
+    <div
+      className={`data-node status-${data.status ?? 'idle'}${selected ? ' is-selected' : ''}`}
+    >
+      {!isInput && <Handle id="in" type="target" position={Position.Left} />}
       <span className="data-node__kind">{data.kind}</span>
       <strong>{data.label}</strong>
-      {!isOutput && <Handle type="source" position={Position.Right} />}
+      {data.status && data.status !== 'idle' && (
+        <span className="data-node__status">{statusLabel[data.status]}</span>
+      )}
+      {!isOutput && <Handle id="out" type="source" position={Position.Right} />}
     </div>
   );
 }
 
 const nodeTypes = { dataNode: DataNode };
+const statusLabel = {
+  idle: '空闲',
+  queued: '排队中',
+  running: '运行中',
+  succeeded: '成功',
+  warning: '警告',
+  failed: '失败',
+  cancelled: '已取消',
+} as const;
 
 function CanvasSurface() {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -125,6 +139,7 @@ function CanvasSurface() {
   const edges = useCanvasStore((state) => state.edges);
   const pastCount = useCanvasStore((state) => state.past.length);
   const futureCount = useCanvasStore((state) => state.future.length);
+  const connectionIssue = useCanvasStore((state) => state.connectionIssue);
   const applyNodeChanges = useCanvasStore((state) => state.applyNodeChanges);
   const applyEdgeChanges = useCanvasStore((state) => state.applyEdgeChanges);
   const connect = useCanvasStore((state) => state.connect);
@@ -226,6 +241,11 @@ function CanvasSurface() {
             variant={BackgroundVariant.Dots}
           />
         </ReactFlow>
+        {connectionIssue && (
+          <div className="connection-issue" role="alert">
+            {connectionIssue}
+          </div>
+        )}
       </div>
     </section>
   );

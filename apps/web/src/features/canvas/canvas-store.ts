@@ -8,12 +8,18 @@ import {
   type Node,
   type NodeChange,
 } from '@xyflow/react';
+import {
+  nodeDefinitions,
+  type NodeKind,
+  type NodeRunStatus,
+} from '@luke/contracts';
 import { create } from 'zustand';
 
 export interface CanvasNodeData extends Record<string, unknown> {
   label: string;
   kind: string;
   config: unknown;
+  status?: NodeRunStatus;
 }
 
 export type CanvasNode = Node<CanvasNodeData>;
@@ -24,6 +30,7 @@ interface Snapshot {
 }
 
 interface CanvasState extends Snapshot {
+  connectionIssue: string | null;
   past: Snapshot[];
   future: Snapshot[];
   applyNodeChanges: (changes: NodeChange<CanvasNode>[]) => void;
@@ -31,6 +38,7 @@ interface CanvasState extends Snapshot {
   connect: (connection: Connection) => void;
   addNode: (node: CanvasNode) => void;
   updateNodeConfig: (nodeId: string, config: unknown) => void;
+  setNodeStatus: (nodeId: string, status: NodeRunStatus) => void;
   undo: () => void;
   redo: () => void;
   reset: () => void;
@@ -51,6 +59,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   ...initialSnapshot,
   past: [],
   future: [],
+  connectionIssue: null,
   applyNodeChanges: (changes) =>
     set((state) =>
       commit(state, {
@@ -66,12 +75,24 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       }),
     ),
   connect: (connection) =>
-    set((state) =>
-      commit(state, {
-        nodes: state.nodes,
-        edges: addEdge(connection, state.edges),
-      }),
-    ),
+    set((state) => {
+      const issue = connectionIssue(state, connection);
+      if (issue) return { connectionIssue: issue };
+      return {
+        ...commit(state, {
+          nodes: state.nodes,
+          edges: addEdge(
+            {
+              ...connection,
+              sourceHandle: connection.sourceHandle ?? 'out',
+              targetHandle: connection.targetHandle ?? 'in',
+            },
+            state.edges,
+          ),
+        }),
+        connectionIssue: null,
+      };
+    }),
   addNode: (node) =>
     set((state) =>
       commit(state, { nodes: [...state.nodes, node], edges: state.edges }),
@@ -87,6 +108,12 @@ export const useCanvasStore = create<CanvasState>((set) => ({
         edges: state.edges,
       }),
     ),
+  setNodeStatus: (nodeId, status) =>
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === nodeId ? { ...node, data: { ...node.data, status } } : node,
+      ),
+    })),
   undo: () =>
     set((state) => {
       const previous = state.past.at(-1);
@@ -112,5 +139,72 @@ export const useCanvasStore = create<CanvasState>((set) => ({
         future: state.future.slice(1),
       };
     }),
-  reset: () => set({ ...initialSnapshot, past: [], future: [] }),
+  reset: () =>
+    set({
+      ...initialSnapshot,
+      past: [],
+      future: [],
+      connectionIssue: null,
+    }),
 }));
+
+function connectionIssue(
+  state: CanvasState,
+  connection: Connection,
+): string | null {
+  const source = state.nodes.find((node) => node.id === connection.source);
+  const target = state.nodes.find((node) => node.id === connection.target);
+  if (!source || !target) return '连接的节点不存在。';
+  if (source.id === target.id) return '节点不能连接到自身。';
+
+  const sourceDefinition = nodeDefinitions[source.data.kind as NodeKind];
+  const targetDefinition = nodeDefinitions[target.data.kind as NodeKind];
+  const sourcePort = connection.sourceHandle ?? 'out';
+  const targetPort = connection.targetHandle ?? 'in';
+  if (
+    !sourceDefinition ||
+    !(sourceDefinition.outputPorts as readonly string[]).includes(sourcePort)
+  ) {
+    return `无效输出端口：${sourcePort}`;
+  }
+  if (
+    !targetDefinition ||
+    !(targetDefinition.inputPorts as readonly string[]).includes(targetPort)
+  ) {
+    return `无效输入端口：${targetPort}`;
+  }
+  if (
+    state.edges.some(
+      (edge) =>
+        edge.target === target.id && (edge.targetHandle ?? 'in') === targetPort,
+    )
+  ) {
+    return `输入端口 ${targetPort} 已连接。`;
+  }
+  if (
+    state.edges.some(
+      (edge) => edge.source === source.id && edge.target === target.id,
+    )
+  ) {
+    return '节点之间已存在连接。';
+  }
+  if (hasPath(state.edges, target.id, source.id)) {
+    return '该连接会形成环。';
+  }
+  return null;
+}
+
+function hasPath(edges: Edge[], start: string, goal: string): boolean {
+  const pending = [start];
+  const visited = new Set<string>();
+  while (pending.length > 0) {
+    const current = pending.pop()!;
+    if (current === goal) return true;
+    if (visited.has(current)) continue;
+    visited.add(current);
+    for (const edge of edges) {
+      if (edge.source === current) pending.push(edge.target);
+    }
+  }
+  return false;
+}
