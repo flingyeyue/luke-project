@@ -15,10 +15,13 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "test": "pnpm --recursive --if-present run test",
-    "typecheck": "pnpm --recursive --if-present run typecheck"
+    "test:e2e": "playwright test --project=chromium",
+    "test:e2e:all": "playwright test",
+    "typecheck": "tsc --noEmit -p tsconfig.json && pnpm --recursive --if-present run typecheck"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.61.1",
     "@types/node": "26.1.1",
     "eslint": "10.7.0",
     "eslint-plugin-react-hooks": "7.1.1",
