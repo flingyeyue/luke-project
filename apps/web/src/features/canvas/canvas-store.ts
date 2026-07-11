@@ -13,6 +13,7 @@ import { create } from 'zustand';
 export interface CanvasNodeData extends Record<string, unknown> {
   label: string;
   kind: string;
+  config: unknown;
 }
 
 export type CanvasNode = Node<CanvasNodeData>;
@@ -29,6 +30,7 @@ interface CanvasState extends Snapshot {
   applyEdgeChanges: (changes: EdgeChange<Edge>[]) => void;
   connect: (connection: Connection) => void;
   addNode: (node: CanvasNode) => void;
+  updateNodeConfig: (nodeId: string, config: unknown) => void;
   undo: () => void;
   redo: () => void;
   reset: () => void;
@@ -73,6 +75,17 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   addNode: (node) =>
     set((state) =>
       commit(state, { nodes: [...state.nodes, node], edges: state.edges }),
+    ),
+  updateNodeConfig: (nodeId, config) =>
+    set((state) =>
+      commit(state, {
+        nodes: state.nodes.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, config } }
+            : node,
+        ),
+        edges: state.edges,
+      }),
     ),
   undo: () =>
     set((state) => {

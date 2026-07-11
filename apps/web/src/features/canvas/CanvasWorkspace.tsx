@@ -23,9 +23,27 @@ import {
 const dragMime = 'application/x-luke-node-kind';
 
 const nodeTemplates = [
-  { kind: 'input.csv', label: 'CSV 输入' },
-  { kind: 'transform.filter', label: '筛选' },
-  { kind: 'output.csv', label: 'CSV 输出' },
+  {
+    kind: 'input.csv',
+    label: 'CSV 输入',
+    config: {
+      sourceId: 'source',
+      delimiter: 'auto',
+      header: true,
+      encoding: 'utf-8',
+      skipEmptyLines: true,
+    },
+  },
+  {
+    kind: 'transform.filter',
+    label: '筛选',
+    config: { predicate: { type: 'literal', value: true } },
+  },
+  {
+    kind: 'output.csv',
+    label: 'CSV 输出',
+    config: { delimiter: ',', includeHeader: true, fileName: 'output.csv' },
+  },
 ] as const;
 
 function DataNode({ data, selected }: NodeProps<CanvasNode>) {
@@ -65,7 +83,11 @@ function CanvasSurface() {
       const template = nodeTemplates.find((item) => item.kind === kind);
       if (!template) return;
 
-      const data: CanvasNodeData = { kind, label: template.label };
+      const data: CanvasNodeData = {
+        kind,
+        label: template.label,
+        config: structuredClone(template.config),
+      };
       addNode({
         id: crypto.randomUUID(),
         type: 'dataNode',

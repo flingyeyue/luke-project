@@ -32,17 +32,12 @@ textarea {
 
 .workspace-shell {
   display: grid;
-  grid-template:
-    'command command command' 48px
-    'library canvas inspector' minmax(0, 1fr)
-    'library data inspector' 210px
-    / 220px minmax(0, 1fr) 280px;
+  grid-template-rows: 48px minmax(0, 1fr) 230px;
   min-height: 100vh;
   background: #f7f8f7;
 }
 
 .command-bar {
-  grid-area: command;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -60,72 +55,23 @@ textarea {
   font-size: 12px;
 }
 
-.node-library,
-.inspector {
-  padding: 16px;
-  background: #ffffff;
-}
-
-.node-library {
-  grid-area: library;
-  border-right: 1px solid #d8ddd9;
-}
-
-.inspector {
-  grid-area: inspector;
-  border-left: 1px solid #d8ddd9;
-}
-
-.canvas {
-  grid-area: canvas;
+.workspace-editor {
   display: grid;
-  place-items: center;
-  padding: 24px;
-  text-align: center;
-  background-color: #f4f6f4;
-  background-image: radial-gradient(#c8cfca 1px, transparent 1px);
-  background-size: 20px 20px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  min-width: 0;
+  min-height: 0;
 }
 
-.canvas h1,
-.node-library h2,
-.inspector h2 {
-  margin: 0 0 8px;
-}
-
-.canvas p,
-.node-library p,
-.inspector p {
-  margin: 0;
-  color: #607067;
-}
-
-.data-panel {
-  grid-area: data;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background: #ffffff;
-  border-top: 1px solid #d8ddd9;
-}
-
-.data-panel span {
-  color: #607067;
-  font-size: 13px;
-}
-
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .workspace-shell {
-    grid-template:
-      'command' 48px
-      'canvas' minmax(400px, 1fr)
-      'data' 180px
-      / 1fr;
+    grid-template-rows: 48px minmax(520px, 1fr) 200px;
   }
 
-  .node-library,
-  .inspector {
+  .workspace-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .node-config-panel {
     display: none;
   }
 }

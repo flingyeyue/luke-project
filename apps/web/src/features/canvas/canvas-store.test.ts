@@ -6,7 +6,11 @@ const node = {
   id: 'node-1',
   type: 'dataNode',
   position: { x: 0, y: 0 },
-  data: { kind: 'input.csv', label: 'CSV 输入' },
+  data: {
+    kind: 'input.csv',
+    label: 'CSV 输入',
+    config: { sourceId: 'source' },
+  },
 };
 
 describe('canvas store', () => {
@@ -38,5 +42,18 @@ describe('canvas store', () => {
 
     useCanvasStore.getState().addNode({ ...node, id: 'node-2' });
     expect(useCanvasStore.getState().future).toHaveLength(0);
+  });
+
+  it('updates node configuration as an undoable change', () => {
+    useCanvasStore.getState().addNode(node);
+    useCanvasStore.getState().updateNodeConfig(node.id, { sourceId: 'orders' });
+
+    expect(useCanvasStore.getState().nodes[0]?.data.config).toEqual({
+      sourceId: 'orders',
+    });
+    useCanvasStore.getState().undo();
+    expect(useCanvasStore.getState().nodes[0]?.data.config).toEqual({
+      sourceId: 'source',
+    });
   });
 });

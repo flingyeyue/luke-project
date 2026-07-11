@@ -9,8 +9,8 @@ describe('App', () => {
 
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(screen.getByLabelText('节点库')).toBeInTheDocument();
-    expect(screen.getByLabelText('流水线画布')).toBeInTheDocument();
-    expect(screen.getByLabelText('配置面板')).toBeInTheDocument();
-    expect(screen.getByLabelText('数据预览')).toBeInTheDocument();
+    expect(screen.getByLabelText('流水线设计器')).toBeInTheDocument();
+    expect(screen.getByLabelText('节点配置')).toBeInTheDocument();
+    expect(screen.getByLabelText('运行数据')).toBeInTheDocument();
   });
 });
