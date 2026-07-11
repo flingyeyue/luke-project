@@ -4,6 +4,7 @@ export * from './deduplicate';
 export * from './execute';
 export * from './expression';
 export * from './filter';
+export * from './group';
 export * from './select';
 export * from './sort';
 export * from './types';

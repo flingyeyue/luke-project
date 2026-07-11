@@ -8,6 +8,7 @@ import { executeCast } from './cast';
 import { executeDerive } from './derive';
 import { executeDeduplicate } from './deduplicate';
 import { executeFilter } from './filter';
+import { executeGroup } from './group';
 import { executeSelect } from './select';
 import { executeSort } from './sort';
 import type { TransformResult } from './types';
@@ -59,6 +60,13 @@ export function executeTransformNode(
       if (parsed.success) {
         return executeDeduplicate(input, parsed.data, node.id);
       }
+      return invalidConfig(node, input, parsed.error.message);
+    }
+    case 'aggregate.group': {
+      const parsed = nodeConfigSchemaByKind['aggregate.group'].safeParse(
+        node.config,
+      );
+      if (parsed.success) return executeGroup(input, parsed.data, node.id);
       return invalidConfig(node, input, parsed.error.message);
     }
     default:
