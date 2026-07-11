@@ -7,7 +7,7 @@ type Tab = 'data' | 'schema' | 'logs' | 'errors';
 const emptyRows: DataBatch['rows'] = [];
 
 interface DataPanelProps {
-  batch?: DataBatch;
+  batch?: DataBatch | undefined;
   diagnostics?: Diagnostic[];
   events?: WorkerEvent[];
 }

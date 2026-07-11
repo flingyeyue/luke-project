@@ -8,18 +8,23 @@ const fixture = fileURLToPath(
   ),
 );
 
-test('uploads and reads the synthetic CSV fixture', async ({ page }) => {
-  await page.setContent('<input aria-label="CSV source" type="file" />');
-  const input = page.getByLabel('CSV source');
+test('imports a CSV through the worker and previews its data', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('选择 CSV').setInputFiles(fixture);
 
-  await input.setInputFiles(fixture);
+  await expect(page.getByText('orders-small.csv · 523 B')).toBeVisible();
+  await page.getByRole('button', { name: '运行' }).click();
 
-  const fileInfo = await input.evaluate((element: HTMLInputElement) => {
-    const file = element.files?.[0];
-    if (!file) return null;
-    return file.text().then((text) => ({ name: file.name, text }));
-  });
-  expect(fileInfo?.name).toBe('orders-small.csv');
-  expect(fileInfo?.text).toContain('order_id,order_date,region');
-  expect(fileInfo?.text).toContain('ORD-1010');
+  await expect(page.getByText('完成', { exact: true })).toBeVisible();
+  await expect(page.getByText('10 行')).toBeVisible();
+  await expect(
+    page.getByRole('columnheader', { name: 'order_id' }),
+  ).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'ORD-1001' })).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'ORD-1010' })).toBeVisible();
+  await page.getByRole('tab', { name: '字段' }).click();
+  await expect(page.getByText('amount')).toBeVisible();
+  await expect(page.getByText('number', { exact: true })).toBeVisible();
 });

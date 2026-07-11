@@ -47,6 +47,49 @@ textarea {
   border-bottom: 1px solid #142019;
 }
 
+.run-controls {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.run-controls button,
+.file-command {
+  display: inline-flex;
+  height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  color: #f7faf7;
+  background: #365244;
+  border: 1px solid #577466;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.run-controls button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.file-command input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.run-controls output {
+  max-width: 240px;
+  overflow: hidden;
+  color: #cbd7d0;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .baseline-badge {
   padding: 3px 8px;
   color: #1f3028;
@@ -72,6 +115,11 @@ textarea {
   }
 
   .node-config-panel {
+    display: none;
+  }
+
+  .command-bar > strong,
+  .run-controls output {
     display: none;
   }
 }

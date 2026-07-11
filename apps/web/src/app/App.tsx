@@ -1,11 +1,21 @@
-import type { PipelineNode } from '@luke/contracts';
+import type {
+  DataBatch,
+  Diagnostic,
+  PipelineNode,
+  WorkerEvent,
+} from '@luke/contracts';
+import { useState } from 'react';
 
 import { CanvasWorkspace } from '../features/canvas/CanvasWorkspace';
 import { useCanvasStore } from '../features/canvas/canvas-store';
 import { NodeConfigPanel } from '../features/node-config/NodeConfigPanel';
 import { DataPanel } from '../features/preview/DataPanel';
+import { CsvRunControls } from '../features/run/CsvRunControls';
 
 export function App() {
+  const [batch, setBatch] = useState<DataBatch>();
+  const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
+  const [events, setEvents] = useState<WorkerEvent[]>([]);
   const selectedNode = useCanvasStore((state) =>
     state.nodes.find((node) => node.selected),
   );
@@ -24,13 +34,22 @@ export function App() {
     <main className="workspace-shell">
       <header className="command-bar">
         <strong>数据流水线</strong>
-        <span className="baseline-badge">Wave 1</span>
+        <CsvRunControls
+          onBatchChange={setBatch}
+          onDiagnosticsChange={setDiagnostics}
+          onEventsChange={(next) =>
+            setEvents((current) =>
+              next.length === 0 ? [] : [...current, ...next],
+            )
+          }
+        />
+        <span className="baseline-badge">M1</span>
       </header>
       <div className="workspace-editor">
         <CanvasWorkspace />
         <NodeConfigPanel node={pipelineNode} onChange={updateNodeConfig} />
       </div>
-      <DataPanel />
+      <DataPanel batch={batch} diagnostics={diagnostics} events={events} />
     </main>
   );
 }

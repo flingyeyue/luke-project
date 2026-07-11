@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@luke/contracts": "workspace:*",
+    "@luke/file-adapters": "workspace:*",
     "@xyflow/react": "12.11.2",
     "lucide-react": "1.24.0",
     "react": "19.2.7",
