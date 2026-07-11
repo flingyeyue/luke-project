@@ -6,7 +6,7 @@ import type {
 } from '@luke/contracts';
 import { useState } from 'react';
 import { Download } from 'lucide-react';
-import { exportCsv } from '@luke/file-adapters';
+import { exportCsv } from '@luke/file-adapters/export';
 
 import { CanvasWorkspace } from '../features/canvas/CanvasWorkspace';
 import { useCanvasStore } from '../features/canvas/canvas-store';

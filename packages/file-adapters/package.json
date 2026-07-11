@@ -7,6 +7,18 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./csv": {
+      "types": "./src/csv.ts",
+      "import": "./src/csv.ts"
+    },
+    "./export": {
+      "types": "./src/export.ts",
+      "import": "./src/export.ts"
+    },
+    "./xlsx": {
+      "types": "./src/xlsx.ts",
+      "import": "./src/xlsx.ts"
     }
   },
   "scripts": {
@@ -16,6 +28,7 @@
   },
   "dependencies": {
     "@luke/contracts": "workspace:*",
+    "exceljs": "4.4.0",
     "papaparse": "5.5.4"
   },
   "devDependencies": {

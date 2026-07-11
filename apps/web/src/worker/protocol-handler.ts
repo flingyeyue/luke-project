@@ -7,7 +7,7 @@ import {
   type WorkerEvent,
   workerCommandSchema,
 } from '@luke/contracts';
-import { parseCsvFile } from '@luke/file-adapters';
+import { parseCsvFile } from '@luke/file-adapters/csv';
 import { executeTransformNode, validateGraph } from '@luke/pipeline-engine';
 
 type Clock = () => string;
