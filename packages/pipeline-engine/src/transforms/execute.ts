@@ -6,8 +6,10 @@ import {
 
 import { executeCast } from './cast';
 import { executeDerive } from './derive';
+import { executeDeduplicate } from './deduplicate';
 import { executeFilter } from './filter';
 import { executeSelect } from './select';
+import { executeSort } from './sort';
 import type { TransformResult } from './types';
 
 export function executeTransformNode(
@@ -41,6 +43,22 @@ export function executeTransformNode(
         node.config,
       );
       if (parsed.success) return executeDerive(input, parsed.data, node.id);
+      return invalidConfig(node, input, parsed.error.message);
+    }
+    case 'transform.sort': {
+      const parsed = nodeConfigSchemaByKind['transform.sort'].safeParse(
+        node.config,
+      );
+      if (parsed.success) return executeSort(input, parsed.data, node.id);
+      return invalidConfig(node, input, parsed.error.message);
+    }
+    case 'transform.deduplicate': {
+      const parsed = nodeConfigSchemaByKind['transform.deduplicate'].safeParse(
+        node.config,
+      );
+      if (parsed.success) {
+        return executeDeduplicate(input, parsed.data, node.id);
+      }
       return invalidConfig(node, input, parsed.error.message);
     }
     default:
