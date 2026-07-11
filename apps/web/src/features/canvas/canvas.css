@@ -1,0 +1,117 @@
+.canvas-workspace {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  min-height: 560px;
+  background: #f4f6f4;
+}
+
+.canvas-library {
+  z-index: 2;
+  padding: 14px;
+  background: #ffffff;
+  border-right: 1px solid #d8ddd9;
+}
+
+.canvas-library h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.node-template {
+  display: grid;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 9px 10px;
+  text-align: left;
+  background: #f8faf8;
+  border: 1px solid #ccd4ce;
+  border-radius: 6px;
+  cursor: grab;
+}
+
+.node-template:hover {
+  border-color: #66856f;
+}
+
+.node-template small,
+.data-node__kind {
+  color: #65736a;
+  font-size: 10px;
+}
+
+.canvas-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.canvas-toolbar {
+  position: absolute;
+  z-index: 5;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 32px) 1px repeat(3, 32px);
+  gap: 4px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid #ccd4ce;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgb(31 48 40 / 10%);
+}
+
+.canvas-toolbar > span {
+  width: 1px;
+  margin: 4px 0;
+  background: #d8ddd9;
+}
+
+.canvas-toolbar button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  color: #30483a;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.canvas-toolbar button:hover:not(:disabled) {
+  background: #edf2ee;
+}
+
+.canvas-toolbar button:disabled {
+  color: #a8b0aa;
+  cursor: default;
+}
+
+.data-node {
+  display: grid;
+  min-width: 150px;
+  gap: 3px;
+  padding: 10px 12px;
+  color: #1f3028;
+  background: #ffffff;
+  border: 1px solid #9eaaa2;
+  border-left: 4px solid #4d775e;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgb(31 48 40 / 10%);
+}
+
+.data-node.is-selected {
+  border-color: #2f6546;
+  box-shadow: 0 0 0 2px rgb(47 101 70 / 18%);
+}
+
+@media (max-width: 720px) {
+  .canvas-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .canvas-library {
+    display: none;
+  }
+}
