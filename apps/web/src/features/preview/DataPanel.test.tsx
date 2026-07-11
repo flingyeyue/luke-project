@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
 import type { DataBatch } from '@luke/contracts';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { DataPanel } from './DataPanel';
@@ -8,19 +8,25 @@ const batch: DataBatch = {
   schema: {
     columns: [{ id: 'name', name: 'Name', type: 'string', nullable: false }],
   },
-  rows: Array.from({ length: 21 }, (_, index) => [`Row ${index + 1}`]),
+  rows: Array.from({ length: 1000 }, (_, index) => [`Row ${index + 1}`]),
   offset: 0,
-  totalRows: 21,
+  totalRows: 1000,
 };
 
 describe('DataPanel', () => {
-  it('paginates preview rows', () => {
+  it('virtualizes a 1000-row preview while supporting direct scrolling', () => {
     render(<DataPanel batch={batch} />);
 
+    const table = screen.getByRole('table', { name: '数据表格' });
     expect(screen.getByText('Row 1')).toBeInTheDocument();
-    expect(screen.queryByText('Row 21')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText('下一页'));
-    expect(screen.getByText('Row 21')).toBeInTheDocument();
+    expect(screen.queryByText('Row 1000')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('row').length).toBeLessThan(20);
+
+    fireEvent.scroll(table, { target: { scrollTop: 32 * 999 } });
+
+    expect(screen.getByText('Row 1000')).toBeInTheDocument();
+    expect(screen.queryByText('Row 1')).not.toBeInTheDocument();
+    expect(screen.getByText('1000 行')).toBeInTheDocument();
   });
 
   it('shows structured errors in the error tab', () => {

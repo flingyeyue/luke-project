@@ -18,7 +18,8 @@ test('imports a CSV through the worker and previews its data', async ({
   await page.getByRole('button', { name: '运行' }).click();
 
   await expect(page.getByText('完成', { exact: true })).toBeVisible();
-  await expect(page.getByText('10 行')).toBeVisible();
+  await expect(page.getByText('10 行', { exact: true })).toBeVisible();
+  await expect(page.getByText('已加载 10 行')).toBeVisible();
   await expect(
     page.getByRole('columnheader', { name: 'order_id' }),
   ).toBeVisible();
