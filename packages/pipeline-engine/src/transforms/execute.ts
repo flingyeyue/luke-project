@@ -5,6 +5,8 @@ import {
 } from '@luke/contracts';
 
 import { executeCast } from './cast';
+import { executeDerive } from './derive';
+import { executeFilter } from './filter';
 import { executeSelect } from './select';
 import type { TransformResult } from './types';
 
@@ -25,6 +27,20 @@ export function executeTransformNode(
         node.config,
       );
       if (parsed.success) return executeCast(input, parsed.data, node.id);
+      return invalidConfig(node, input, parsed.error.message);
+    }
+    case 'transform.filter': {
+      const parsed = nodeConfigSchemaByKind['transform.filter'].safeParse(
+        node.config,
+      );
+      if (parsed.success) return executeFilter(input, parsed.data, node.id);
+      return invalidConfig(node, input, parsed.error.message);
+    }
+    case 'transform.derive': {
+      const parsed = nodeConfigSchemaByKind['transform.derive'].safeParse(
+        node.config,
+      );
+      if (parsed.success) return executeDerive(input, parsed.data, node.id);
       return invalidConfig(node, input, parsed.error.message);
     }
     default:
