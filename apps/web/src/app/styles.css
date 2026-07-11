@@ -1,0 +1,131 @@
+:root {
+  color: #18211c;
+  background: #edf0ed;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.workspace-shell {
+  display: grid;
+  grid-template:
+    'command command command' 48px
+    'library canvas inspector' minmax(0, 1fr)
+    'library data inspector' 210px
+    / 220px minmax(0, 1fr) 280px;
+  min-height: 100vh;
+  background: #f7f8f7;
+}
+
+.command-bar {
+  grid-area: command;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  color: #f7faf7;
+  background: #1f3028;
+  border-bottom: 1px solid #142019;
+}
+
+.baseline-badge {
+  padding: 3px 8px;
+  color: #1f3028;
+  background: #bfe26b;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.node-library,
+.inspector {
+  padding: 16px;
+  background: #ffffff;
+}
+
+.node-library {
+  grid-area: library;
+  border-right: 1px solid #d8ddd9;
+}
+
+.inspector {
+  grid-area: inspector;
+  border-left: 1px solid #d8ddd9;
+}
+
+.canvas {
+  grid-area: canvas;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  background-color: #f4f6f4;
+  background-image: radial-gradient(#c8cfca 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.canvas h1,
+.node-library h2,
+.inspector h2 {
+  margin: 0 0 8px;
+}
+
+.canvas p,
+.node-library p,
+.inspector p {
+  margin: 0;
+  color: #607067;
+}
+
+.data-panel {
+  grid-area: data;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #ffffff;
+  border-top: 1px solid #d8ddd9;
+}
+
+.data-panel span {
+  color: #607067;
+  font-size: 13px;
+}
+
+@media (max-width: 800px) {
+  .workspace-shell {
+    grid-template:
+      'command' 48px
+      'canvas' minmax(400px, 1fr)
+      'data' 180px
+      / 1fr;
+  }
+
+  .node-library,
+  .inspector {
+    display: none;
+  }
+}

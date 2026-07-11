@@ -1,0 +1,8 @@
+{
+  "name": "@luke/test-fixtures",
+  "version": "0.1.0",
+  "private": true,
+  "files": [
+    "data"
+  ]
+}

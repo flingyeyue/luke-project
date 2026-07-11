@@ -2,7 +2,7 @@
 
 - 契约版本：`1.0.0`
 - 项目格式版本：`1`
-- 状态：M0 基线候选
+- 状态：M0 基线已接受
 - 最后更新：2026-07-11
 
 本文档是画布、节点配置、文件适配器、执行引擎、Web Worker 和测试之间的规范性边界。关键词“必须”“不得”“应当”具有约束力。TypeScript 类型与 Zod Schema 实现在 `project/packages/contracts`；实现不得改变本文档语义。
@@ -64,7 +64,7 @@ interface Viewport {
 
 ```ts
 interface PipelineProject {
-  format: "visual-data-pipeline";
+  format: 'visual-data-pipeline';
   formatVersion: 1;
   id: string;
   name: string;
@@ -90,20 +90,20 @@ interface PipelineProject {
 
 ```ts
 type NodeKind =
-  | "input.csv"
-  | "input.json"
-  | "input.xlsx"
-  | "transform.select"
-  | "transform.cast"
-  | "transform.filter"
-  | "transform.derive"
-  | "transform.sort"
-  | "transform.deduplicate"
-  | "aggregate.group"
-  | "combine.join"
-  | "output.csv"
-  | "output.json"
-  | "output.xlsx";
+  | 'input.csv'
+  | 'input.json'
+  | 'input.xlsx'
+  | 'transform.select'
+  | 'transform.cast'
+  | 'transform.filter'
+  | 'transform.derive'
+  | 'transform.sort'
+  | 'transform.deduplicate'
+  | 'aggregate.group'
+  | 'combine.join'
+  | 'output.csv'
+  | 'output.json'
+  | 'output.xlsx';
 
 interface PipelineNode {
   id: NodeId;
@@ -149,9 +149,9 @@ interface PipelineEdge {
 ```ts
 interface CsvInputConfig {
   sourceId: string;
-  delimiter: "auto" | "," | ";" | "\t" | "|";
+  delimiter: 'auto' | ',' | ';' | '\t' | '|';
   header: boolean;
-  encoding: "utf-8";
+  encoding: 'utf-8';
   skipEmptyLines: boolean;
 }
 
@@ -177,17 +177,12 @@ interface SelectConfig {
 }
 
 type ColumnType =
-  | "string"
-  | "number"
-  | "boolean"
-  | "date"
-  | "datetime"
-  | "unknown";
+  'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'unknown';
 
 interface CastRule {
   columnId: ColumnId;
-  targetType: Exclude<ColumnType, "unknown">;
-  onError: "fail" | "null" | "keep-original";
+  targetType: Exclude<ColumnType, 'unknown'>;
+  onError: 'fail' | 'null' | 'keep-original';
 }
 
 interface CastConfig {
@@ -195,24 +190,24 @@ interface CastConfig {
 }
 
 type Expression =
-  | { type: "literal"; value: string | number | boolean | null }
-  | { type: "column"; columnId: ColumnId }
-  | { type: "unary"; operator: "not" | "is-null"; operand: Expression }
+  | { type: 'literal'; value: string | number | boolean | null }
+  | { type: 'column'; columnId: ColumnId }
+  | { type: 'unary'; operator: 'not' | 'is-null'; operand: Expression }
   | {
-      type: "binary";
+      type: 'binary';
       operator:
-        | "eq"
-        | "neq"
-        | "gt"
-        | "gte"
-        | "lt"
-        | "lte"
-        | "and"
-        | "or"
-        | "add"
-        | "subtract"
-        | "multiply"
-        | "divide";
+        | 'eq'
+        | 'neq'
+        | 'gt'
+        | 'gte'
+        | 'lt'
+        | 'lte'
+        | 'and'
+        | 'or'
+        | 'add'
+        | 'subtract'
+        | 'multiply'
+        | 'divide';
       left: Expression;
       right: Expression;
     };
@@ -228,8 +223,8 @@ interface DeriveConfig {
 
 interface SortRule {
   columnId: ColumnId;
-  direction: "asc" | "desc";
-  nulls: "first" | "last";
+  direction: 'asc' | 'desc';
+  nulls: 'first' | 'last';
 }
 
 interface SortConfig {
@@ -238,10 +233,10 @@ interface SortConfig {
 
 interface DeduplicateConfig {
   columnIds: ColumnId[];
-  keep: "first" | "last";
+  keep: 'first' | 'last';
 }
 
-type AggregateOperation = "count" | "sum" | "avg" | "min" | "max";
+type AggregateOperation = 'count' | 'sum' | 'avg' | 'min' | 'max';
 
 interface AggregateSpec {
   operation: AggregateOperation;
@@ -255,20 +250,20 @@ interface GroupConfig {
 }
 
 interface JoinConfig {
-  joinType: "inner" | "left";
+  joinType: 'inner' | 'left';
   leftKeys: ColumnId[];
   rightKeys: ColumnId[];
   rightColumnPrefix: string;
 }
 
 interface CsvOutputConfig {
-  delimiter: "," | ";" | "\t" | "|";
+  delimiter: ',' | ';' | '\t' | '|';
   includeHeader: boolean;
   fileName: string;
 }
 
 interface JsonOutputConfig {
-  shape: "array-of-objects";
+  shape: 'array-of-objects';
   pretty: boolean;
   fileName: string;
 }
@@ -339,17 +334,20 @@ interface SourceBinding {
 
 ```ts
 type NodeRunStatus =
-  | "idle"
-  | "queued"
-  | "running"
-  | "succeeded"
-  | "warning"
-  | "failed"
-  | "cancelled";
+  | 'idle'
+  | 'queued'
+  | 'running'
+  | 'succeeded'
+  | 'warning'
+  | 'failed'
+  | 'cancelled';
 
 interface NodeRunResult {
   nodeId: NodeId;
-  status: Extract<NodeRunStatus, "succeeded" | "warning" | "failed" | "cancelled">;
+  status: Extract<
+    NodeRunStatus,
+    'succeeded' | 'warning' | 'failed' | 'cancelled'
+  >;
   inputRows: number;
   outputRows: number;
   durationMs: number;
@@ -358,7 +356,7 @@ interface NodeRunResult {
 
 interface RunSummary {
   runId: RunId;
-  status: "succeeded" | "warning" | "failed" | "cancelled";
+  status: 'succeeded' | 'warning' | 'failed' | 'cancelled';
   startedAt: ISODateTime;
   finishedAt: ISODateTime;
   nodeResults: NodeRunResult[];
@@ -377,17 +375,17 @@ interface RunSummary {
 
 ```ts
 type WorkerCommand =
-  | { type: "ping"; requestId: string }
+  | { type: 'ping'; requestId: string }
   | {
-      type: "run";
+      type: 'run';
       runId: RunId;
       project: PipelineProject;
       sources: SourceBinding[];
       targetNodeId?: NodeId;
     }
-  | { type: "cancel"; runId: RunId }
+  | { type: 'cancel'; runId: RunId }
   | {
-      type: "preview";
+      type: 'preview';
       requestId: string;
       runId: RunId;
       nodeId: NodeId;
@@ -396,26 +394,26 @@ type WorkerCommand =
     };
 
 type WorkerEvent =
-  | { type: "pong"; requestId: string }
-  | { type: "run-started"; runId: RunId; startedAt: ISODateTime }
+  | { type: 'pong'; requestId: string }
+  | { type: 'run-started'; runId: RunId; startedAt: ISODateTime }
   | {
-      type: "node-progress";
+      type: 'node-progress';
       runId: RunId;
       nodeId: NodeId;
       progress?: number;
       message?: string;
     }
-  | { type: "node-result"; runId: RunId; result: NodeRunResult }
+  | { type: 'node-result'; runId: RunId; result: NodeRunResult }
   | {
-      type: "preview-result";
+      type: 'preview-result';
       requestId: string;
       runId: RunId;
       nodeId: NodeId;
       batch: DataBatch;
     }
-  | { type: "run-completed"; runId: RunId; summary: RunSummary }
-  | { type: "run-failed"; runId: RunId; diagnostics: Diagnostic[] }
-  | { type: "run-cancelled"; runId: RunId; finishedAt: ISODateTime };
+  | { type: 'run-completed'; runId: RunId; summary: RunSummary }
+  | { type: 'run-failed'; runId: RunId; diagnostics: Diagnostic[] }
+  | { type: 'run-cancelled'; runId: RunId; finishedAt: ISODateTime };
 ```
 
 协议要求：
@@ -430,7 +428,7 @@ type WorkerEvent =
 ## 10. 诊断
 
 ```ts
-type DiagnosticSeverity = "info" | "warning" | "error";
+type DiagnosticSeverity = 'info' | 'warning' | 'error';
 
 interface Diagnostic {
   code: string;

@@ -1,0 +1,31 @@
+{
+  "name": "visual-data-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A browser-only visual data transformation pipeline.",
+  "packageManager": "pnpm@11.11.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "pnpm --recursive --if-present run build",
+    "dev": "pnpm --filter @luke/web dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "test": "pnpm --recursive --if-present run test",
+    "typecheck": "pnpm --recursive --if-present run typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.1.1",
+    "eslint": "10.7.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.3",
+    "globals": "17.7.0",
+    "prettier": "3.9.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.63.0"
+  }
+}

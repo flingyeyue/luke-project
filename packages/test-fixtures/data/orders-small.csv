@@ -1,0 +1,11 @@
+order_id,order_date,region,status,amount,tax_rate
+ORD-1001,2026-01-03,north,completed,120.50,0.08
+ORD-1002,2026-01-04,south,cancelled,88.00,0.08
+ORD-1003,2026-01-05,east,completed,240.25,0.10
+ORD-1004,2026-01-07,west,pending,59.90,0.08
+ORD-1005,2026-02-01,north,completed,410.00,0.10
+ORD-1006,2026-02-02,south,completed,175.75,0.08
+ORD-1007,invalid-date,east,completed,not-a-number,0.10
+ORD-1008,2026-02-09,west,cancelled,92.40,0.08
+ORD-1009,2026-03-11,north,completed,,0.10
+ORD-1010,2026-03-14,south,completed,315.20,0.08
