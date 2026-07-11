@@ -1,0 +1,81 @@
+.node-config-panel {
+  display: grid;
+  grid-template-rows: auto auto minmax(180px, 1fr) auto;
+  gap: 10px;
+  min-width: 260px;
+  min-height: 0;
+  padding: 14px;
+  background: #ffffff;
+  border-left: 1px solid #d8ddd9;
+}
+
+.node-config-panel header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.node-config-panel h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.node-config-panel header span,
+.node-config-panel label {
+  color: #65736a;
+  font-size: 11px;
+}
+
+.node-config-panel button {
+  padding: 6px 11px;
+  color: #ffffff;
+  background: #2f6546;
+  border: 1px solid #28583d;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.node-config-panel textarea {
+  width: 100%;
+  min-height: 180px;
+  padding: 10px;
+  resize: vertical;
+  color: #243129;
+  background: #f8faf8;
+  border: 1px solid #cdd4cf;
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.node-config-panel textarea[aria-invalid='true'] {
+  border-color: #b64040;
+}
+
+.config-issues {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.config-issues li {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  color: #7a2424;
+  background: #fff1f0;
+  border-left: 3px solid #b64040;
+  font-size: 12px;
+}
+
+.empty-selection {
+  display: grid;
+  min-height: 160px;
+  place-items: center;
+  color: #77837b;
+  font-size: 13px;
+}
