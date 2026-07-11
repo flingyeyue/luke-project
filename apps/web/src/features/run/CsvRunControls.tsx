@@ -50,6 +50,13 @@ export function CsvRunControls({
       const parsed = workerEventSchema.safeParse(message.data);
       if (!parsed.success) return;
       const event = parsed.data;
+      if (
+        'runId' in event &&
+        runRef.current &&
+        event.runId !== runRef.current.runId
+      ) {
+        return;
+      }
       onEventsChange([event]);
       if (event.type === 'run-started') {
         setStatus('解析中');
