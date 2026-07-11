@@ -15,6 +15,8 @@ test('imports a CSV through the worker and previews its data', async ({
   await page.getByLabel('选择 CSV').setInputFiles(fixture);
 
   await expect(page.getByText('orders-small.csv · 523 B')).toBeVisible();
+  await page.getByRole('button', { name: /筛选 transform\.filter/u }).click();
+  await page.getByRole('button', { name: /CSV 输出 output\.csv/u }).click();
   await page.getByRole('button', { name: '运行' }).click();
 
   await expect(page.getByText('完成', { exact: true })).toBeVisible();
@@ -28,4 +30,18 @@ test('imports a CSV through the worker and previews its data', async ({
   await page.getByRole('tab', { name: '字段' }).click();
   await expect(page.getByText('amount')).toBeVisible();
   await expect(page.getByText('number', { exact: true })).toBeVisible();
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: '导出' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('pipeline-output.csv');
+  expect(await download.createReadStream().then(readStream)).toContain(
+    'ORD-1010',
+  );
 });
+
+async function readStream(stream: NodeJS.ReadableStream): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  return Buffer.concat(chunks).toString('utf8');
+}

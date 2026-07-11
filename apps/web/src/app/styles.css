@@ -55,7 +55,8 @@ textarea {
 }
 
 .run-controls button,
-.file-command {
+.file-command,
+.export-command {
   display: inline-flex;
   height: 32px;
   align-items: center;
@@ -66,6 +67,11 @@ textarea {
   border: 1px solid #577466;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.export-command:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 .run-controls button:disabled {

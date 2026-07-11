@@ -12,6 +12,7 @@
   "dependencies": {
     "@luke/contracts": "workspace:*",
     "@luke/file-adapters": "workspace:*",
+    "@luke/pipeline-engine": "workspace:*",
     "@xyflow/react": "12.11.2",
     "lucide-react": "1.24.0",
     "react": "19.2.7",

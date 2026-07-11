@@ -14,11 +14,7 @@ import { useCallback, useRef, type DragEvent } from 'react';
 import '@xyflow/react/dist/style.css';
 import './canvas.css';
 
-import {
-  type CanvasNode,
-  type CanvasNodeData,
-  useCanvasStore,
-} from './canvas-store';
+import { type CanvasNode, useCanvasStore } from './canvas-store';
 
 const dragMime = 'application/x-luke-node-kind';
 
@@ -148,6 +144,41 @@ function CanvasSurface() {
   const redo = useCanvasStore((state) => state.redo);
   const { fitView, screenToFlowPosition, zoomIn, zoomOut } = useReactFlow();
 
+  const addTemplate = useCallback(
+    (
+      template: (typeof nodeTemplates)[number],
+      position: { x: number; y: number },
+    ) => {
+      const nodeId = crypto.randomUUID();
+      const previousTerminal = [...nodes]
+        .reverse()
+        .find(
+          (node) =>
+            !edges.some((edge) => edge.source === node.id) &&
+            !node.data.kind.startsWith('output.'),
+        );
+      addNode({
+        id: nodeId,
+        type: 'dataNode',
+        position,
+        data: {
+          kind: template.kind,
+          label: template.label,
+          config: structuredClone(template.config),
+        },
+      });
+      if (previousTerminal && !template.kind.startsWith('input.')) {
+        useCanvasStore.getState().connect({
+          source: previousTerminal.id,
+          sourceHandle: 'out',
+          target: nodeId,
+          targetHandle: 'in',
+        });
+      }
+    },
+    [addNode, edges, nodes],
+  );
+
   const onDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -155,19 +186,12 @@ function CanvasSurface() {
       const template = nodeTemplates.find((item) => item.kind === kind);
       if (!template) return;
 
-      const data: CanvasNodeData = {
-        kind,
-        label: template.label,
-        config: structuredClone(template.config),
-      };
-      addNode({
-        id: crypto.randomUUID(),
-        type: 'dataNode',
-        position: screenToFlowPosition({ x: event.clientX, y: event.clientY }),
-        data,
-      });
+      addTemplate(
+        template,
+        screenToFlowPosition({ x: event.clientX, y: event.clientY }),
+      );
     },
-    [addNode, screenToFlowPosition],
+    [addTemplate, screenToFlowPosition],
   );
 
   return (
@@ -179,6 +203,12 @@ function CanvasSurface() {
             className="node-template"
             draggable
             key={template.kind}
+            onClick={() =>
+              addTemplate(template, {
+                x: 120 + nodes.length * 190,
+                y: 120,
+              })
+            }
             onDragStart={(event) => {
               event.dataTransfer.setData(dragMime, template.kind);
               event.dataTransfer.effectAllowed = 'move';

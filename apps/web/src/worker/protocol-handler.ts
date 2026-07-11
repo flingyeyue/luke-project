@@ -8,6 +8,7 @@ import {
   workerCommandSchema,
 } from '@luke/contracts';
 import { parseCsvFile } from '@luke/file-adapters';
+import { executeTransformNode, validateGraph } from '@luke/pipeline-engine';
 
 type Clock = () => string;
 
@@ -117,10 +118,19 @@ export class ProtocolHandler {
       ];
     }
 
-    const node =
-      command.project.nodes.find(
-        (candidate) => candidate.id === command.targetNodeId,
-      ) ?? command.project.nodes[0];
+    const validation = validateGraph(command.project);
+    const graphErrors = validation.diagnostics.filter(
+      (item) => item.severity === 'error',
+    );
+    if (graphErrors.length > 0) {
+      return [
+        { type: 'run-started', runId: command.runId, startedAt },
+        { type: 'run-failed', runId: command.runId, diagnostics: graphErrors },
+      ];
+    }
+    const node = command.project.nodes.find(
+      (candidate) => candidate.kind === 'input.csv',
+    );
     if (!node) {
       return this.#failedRun(
         command.runId,
@@ -128,18 +138,6 @@ export class ProtocolHandler {
         diagnostic('PIPELINE_EMPTY', 'The pipeline does not contain a node.'),
       );
     }
-    if (node.kind !== 'input.csv') {
-      return this.#failedRun(
-        command.runId,
-        startedAt,
-        diagnostic(
-          'NODE_KIND_NOT_IMPLEMENTED',
-          `Wave 1 execution supports CSV input nodes, not ${node.kind}.`,
-          node.id,
-        ),
-      );
-    }
-
     const config = node.config as NodeConfigByKind['input.csv'];
     const source = command.sources.find(
       (candidate) => candidate.sourceId === config.sourceId,
@@ -181,7 +179,7 @@ export class ProtocolHandler {
         },
       ];
     }
-    const diagnostics = parsed.diagnostics.map((item) => ({
+    const diagnostics: Diagnostic[] = parsed.diagnostics.map((item) => ({
       ...item,
       nodeId: node.id,
     }));
@@ -217,14 +215,97 @@ export class ProtocolHandler {
         { type: 'run-failed', runId: command.runId, diagnostics },
       ];
     }
-
+    const batches = new Map<string, DataBatch>([[node.id, parsed.batch]]);
+    const nodeResults: NodeRunResult[] = [result];
     this.#previews.set(`${command.runId}:${node.id}`, parsed.batch);
+
+    for (const nodeId of validation.order) {
+      if (nodeId === node.id) continue;
+      const currentNode = command.project.nodes.find(
+        (candidate) => candidate.id === nodeId,
+      );
+      if (!currentNode) continue;
+      if (this.#cancelledRuns.has(command.runId)) {
+        return [
+          ...events,
+          {
+            type: 'run-cancelled',
+            runId: command.runId,
+            finishedAt: this.#clock(),
+          },
+        ];
+      }
+      const incoming = command.project.edges.find(
+        (edge) => edge.target.nodeId === nodeId,
+      );
+      const inputBatch = incoming
+        ? batches.get(incoming.source.nodeId)
+        : undefined;
+      if (!inputBatch) {
+        const item = diagnostic(
+          'INPUT_DATA_NOT_AVAILABLE',
+          'The upstream node did not produce data.',
+          nodeId,
+        );
+        return [
+          ...events,
+          { type: 'run-failed', runId: command.runId, diagnostics: [item] },
+        ];
+      }
+
+      const transformed =
+        currentNode.kind.startsWith('transform.') ||
+        currentNode.kind === 'aggregate.group'
+          ? executeTransformNode(currentNode, inputBatch)
+          : { batch: inputBatch, diagnostics: [] };
+      const failed = transformed.diagnostics.some(
+        (item) => item.severity === 'error',
+      );
+      const currentResult: NodeRunResult = {
+        nodeId,
+        status: failed
+          ? 'failed'
+          : transformed.diagnostics.length > 0
+            ? 'warning'
+            : 'succeeded',
+        inputRows: inputBatch.totalRows ?? inputBatch.rows.length,
+        outputRows:
+          transformed.batch.totalRows ?? transformed.batch.rows.length,
+        durationMs: 0,
+        diagnostics: transformed.diagnostics,
+      };
+      events.push(
+        {
+          type: 'node-progress',
+          runId: command.runId,
+          nodeId,
+          progress: 1,
+          message: 'Node completed',
+        },
+        { type: 'node-result', runId: command.runId, result: currentResult },
+      );
+      nodeResults.push(currentResult);
+      if (failed) {
+        return [
+          ...events,
+          {
+            type: 'run-failed',
+            runId: command.runId,
+            diagnostics: transformed.diagnostics,
+          },
+        ];
+      }
+      batches.set(nodeId, transformed.batch);
+      this.#previews.set(`${command.runId}:${nodeId}`, transformed.batch);
+    }
     const summary: RunSummary = {
       runId: command.runId,
-      status,
+      status: nodeResults.some((item) => item.status === 'warning')
+        ? 'warning'
+        : 'succeeded',
       startedAt,
       finishedAt: this.#clock(),
-      nodeResults: [result],
+      nodeResults,
     };
     return [
       ...events,

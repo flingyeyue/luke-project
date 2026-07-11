@@ -5,6 +5,8 @@ import type {
   WorkerEvent,
 } from '@luke/contracts';
 import { useState } from 'react';
+import { Download } from 'lucide-react';
+import { exportCsv } from '@luke/file-adapters';
 
 import { CanvasWorkspace } from '../features/canvas/CanvasWorkspace';
 import { useCanvasStore } from '../features/canvas/canvas-store';
@@ -43,6 +45,31 @@ export function App() {
             )
           }
         />
+        <button
+          className="export-command"
+          disabled={!batch}
+          onClick={() => {
+            if (!batch) return;
+            const exported = exportCsv(batch, {
+              delimiter: ',',
+              includeHeader: true,
+              fileName: 'pipeline-output.csv',
+            });
+            const url = URL.createObjectURL(
+              new Blob([exported.content], { type: exported.mimeType }),
+            );
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = exported.fileName;
+            anchor.click();
+            URL.revokeObjectURL(url);
+          }}
+          title="导出 CSV"
+          type="button"
+        >
+          <Download aria-hidden="true" size={16} />
+          导出
+        </button>
         <span className="baseline-badge">M1</span>
       </header>
       <div className="workspace-editor">

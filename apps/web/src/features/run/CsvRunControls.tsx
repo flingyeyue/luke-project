@@ -149,8 +149,12 @@ export function CsvRunControls({
       })),
     };
     const runId = crypto.randomUUID();
-    runRef.current = { runId, nodeId: csvNode.id };
-    setNodeStatus(csvNode.id, 'queued');
+    const outgoing = new Set(project.edges.map((edge) => edge.source.nodeId));
+    const previewNode =
+      [...project.nodes].reverse().find((node) => !outgoing.has(node.id)) ??
+      csvNode;
+    runRef.current = { runId, nodeId: previewNode.id };
+    for (const node of project.nodes) setNodeStatus(node.id, 'queued');
     onEventsChange([]);
     onDiagnosticsChange([]);
     onBatchChange(undefined);
@@ -160,7 +164,6 @@ export function CsvRunControls({
       runId,
       project,
       sources: [source],
-      targetNodeId: csvNode.id,
     } satisfies WorkerCommand);
   };
 
