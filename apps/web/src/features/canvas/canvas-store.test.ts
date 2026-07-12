@@ -129,6 +129,34 @@ describe('canvas store', () => {
     expect(useCanvasStore.getState().past).toHaveLength(historyLength);
   });
 
+  it('tracks unsaved graph changes but ignores selection and runtime status', () => {
+    useCanvasStore.getState().addNode(node);
+    expect(useCanvasStore.getState().dirty).toBe(true);
+    useCanvasStore.getState().markSaved();
+
+    useCanvasStore
+      .getState()
+      .applyNodeChanges([{ id: node.id, type: 'select', selected: true }]);
+    useCanvasStore.getState().setNodeStatus(node.id, 'running');
+    expect(useCanvasStore.getState().dirty).toBe(false);
+
+    useCanvasStore.getState().updateNodeConfig(node.id, { sourceId: 'new' });
+    expect(useCanvasStore.getState().dirty).toBe(true);
+  });
+
+  it('loads a project snapshot as a clean state without undo history', () => {
+    useCanvasStore.getState().addNode(node);
+    useCanvasStore.getState().loadSnapshot({ nodes: [node], edges: [] });
+
+    expect(useCanvasStore.getState()).toMatchObject({
+      nodes: [node],
+      edges: [],
+      dirty: false,
+      past: [],
+      future: [],
+    });
+  });
+
   it('updates node configuration as an undoable change', () => {
     useCanvasStore.getState().addNode(node);
     useCanvasStore.getState().updateNodeConfig(node.id, { sourceId: 'orders' });

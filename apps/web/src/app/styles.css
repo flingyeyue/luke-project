@@ -54,6 +54,38 @@ textarea {
   gap: 8px;
 }
 
+.project-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.project-controls button,
+.project-controls label {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  color: #f7faf7;
+  background: transparent;
+  border: 1px solid #577466;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.project-controls input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip: rect(0 0 0 0);
+}
+
+.project-controls span {
+  color: #cbd7d0;
+  font-size: 12px;
+}
+
 .run-controls button,
 .file-command,
 .export-command {

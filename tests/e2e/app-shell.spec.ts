@@ -5,6 +5,7 @@ test('renders the workspace shell', async ({ page }) => {
 
   await expect(page).toHaveTitle('数据流水线');
   await expect(page.getByRole('main')).toBeVisible();
+  await expect(page.getByLabel('项目文件')).toContainText('已保存');
   await expect(page.getByLabel('节点库')).toBeVisible();
   await expect(
     page.getByRole('button', { name: /选择与重命名/u }),

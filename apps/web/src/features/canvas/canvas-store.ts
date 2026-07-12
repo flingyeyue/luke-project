@@ -24,35 +24,39 @@ export interface CanvasNodeData extends Record<string, unknown> {
 
 export type CanvasNode = Node<CanvasNodeData>;
 
-interface Snapshot {
+export interface CanvasSnapshot {
   nodes: CanvasNode[];
   edges: Edge[];
 }
 
-interface CanvasState extends Snapshot {
+interface CanvasState extends CanvasSnapshot {
+  dirty: boolean;
   connectionIssue: string | null;
-  past: Snapshot[];
-  future: Snapshot[];
+  past: CanvasSnapshot[];
+  future: CanvasSnapshot[];
   applyNodeChanges: (changes: NodeChange<CanvasNode>[]) => void;
   applyEdgeChanges: (changes: EdgeChange<Edge>[]) => void;
   connect: (connection: Connection) => void;
   addNode: (node: CanvasNode) => void;
   updateNodeConfig: (nodeId: string, config: unknown) => void;
   setNodeStatus: (nodeId: string, status: NodeRunStatus) => void;
+  loadSnapshot: (snapshot: CanvasSnapshot) => void;
+  markSaved: () => void;
   undo: () => void;
   redo: () => void;
   reset: () => void;
 }
 
-const initialSnapshot: Snapshot = { nodes: [], edges: [] };
+const initialSnapshot: CanvasSnapshot = { nodes: [], edges: [] };
 
 const commit = (
   state: CanvasState,
-  snapshot: Snapshot,
-): Pick<CanvasState, 'nodes' | 'edges' | 'past' | 'future'> => ({
+  snapshot: CanvasSnapshot,
+): Pick<CanvasState, 'nodes' | 'edges' | 'past' | 'future' | 'dirty'> => ({
   ...snapshot,
   past: [...state.past, { nodes: state.nodes, edges: state.edges }].slice(-50),
   future: [],
+  dirty: true,
 });
 
 export const useCanvasStore = create<CanvasState>((set) => ({
@@ -60,13 +64,19 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   past: [],
   future: [],
   connectionIssue: null,
+  dirty: false,
   applyNodeChanges: (changes) =>
-    set((state) =>
-      commit(state, {
+    set((state) => {
+      const snapshot = {
         nodes: applyNodeChanges(changes, state.nodes),
         edges: state.edges,
-      }),
-    ),
+      };
+      return changes.every((change) =>
+        ['select', 'dimensions'].includes(change.type),
+      )
+        ? snapshot
+        : commit(state, snapshot);
+    }),
   applyEdgeChanges: (changes) =>
     set((state) =>
       commit(state, {
@@ -114,6 +124,16 @@ export const useCanvasStore = create<CanvasState>((set) => ({
         node.id === nodeId ? { ...node, data: { ...node.data, status } } : node,
       ),
     })),
+  loadSnapshot: (snapshot) =>
+    set({
+      nodes: snapshot.nodes,
+      edges: snapshot.edges,
+      past: [],
+      future: [],
+      dirty: false,
+      connectionIssue: null,
+    }),
+  markSaved: () => set({ dirty: false }),
   undo: () =>
     set((state) => {
       const previous = state.past.at(-1);
@@ -125,6 +145,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
           { nodes: state.nodes, edges: state.edges },
           ...state.future,
         ].slice(0, 50),
+        dirty: true,
       };
     }),
   redo: () =>
@@ -137,6 +158,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
           -50,
         ),
         future: state.future.slice(1),
+        dirty: true,
       };
     }),
   reset: () =>
@@ -145,6 +167,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       past: [],
       future: [],
       connectionIssue: null,
+      dirty: false,
     }),
 }));
 

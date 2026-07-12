@@ -12,6 +12,7 @@ import { CanvasWorkspace } from '../features/canvas/CanvasWorkspace';
 import { useCanvasStore } from '../features/canvas/canvas-store';
 import { NodeConfigPanel } from '../features/node-config/NodeConfigPanel';
 import { DataPanel } from '../features/preview/DataPanel';
+import { ProjectControls } from '../features/project/ProjectControls';
 import { CsvRunControls } from '../features/run/CsvRunControls';
 
 export function App() {
@@ -36,6 +37,7 @@ export function App() {
     <main className="workspace-shell">
       <header className="command-bar">
         <strong>数据流水线</strong>
+        <ProjectControls />
         <CsvRunControls
           onBatchChange={setBatch}
           onDiagnosticsChange={setDiagnostics}
