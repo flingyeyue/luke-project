@@ -11,6 +11,9 @@ test('renders the workspace shell', async ({ page }) => {
     page.getByRole('button', { name: /选择与重命名/u }),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: /分组统计/u })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /关联 combine\.join/u }),
+  ).toBeVisible();
   await expect(page.getByLabel('流水线设计器')).toBeVisible();
   await expect(page.getByLabel('节点配置')).toBeVisible();
   await expect(page.getByRole('region', { name: '运行数据' })).toBeVisible();

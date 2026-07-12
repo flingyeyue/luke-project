@@ -84,6 +84,16 @@ const nodeTemplates = [
     },
   },
   {
+    kind: 'combine.join',
+    label: '关联',
+    config: {
+      joinType: 'inner',
+      leftKeys: ['column-1'],
+      rightKeys: ['column-1'],
+      rightColumnPrefix: 'right.',
+    },
+  },
+  {
     kind: 'output.csv',
     label: 'CSV 输出',
     config: { delimiter: ',', includeHeader: true, fileName: 'output.csv' },
@@ -102,12 +112,33 @@ const nodeTemplates = [
 function DataNode({ data, selected }: NodeProps<CanvasNode>) {
   const isInput = data.kind.startsWith('input.');
   const isOutput = data.kind.startsWith('output.');
+  const isJoin = data.kind === 'combine.join';
 
   return (
     <div
       className={`data-node status-${data.status ?? 'idle'}${selected ? ' is-selected' : ''}`}
     >
-      {!isInput && <Handle id="in" type="target" position={Position.Left} />}
+      {!isInput && !isJoin && (
+        <Handle id="in" type="target" position={Position.Left} />
+      )}
+      {isJoin && (
+        <>
+          <Handle
+            className="join-handle join-handle-left"
+            id="left"
+            type="target"
+            position={Position.Left}
+          />
+          <Handle
+            className="join-handle join-handle-right"
+            id="right"
+            type="target"
+            position={Position.Left}
+          />
+          <span className="join-port-label join-port-label-left">left</span>
+          <span className="join-port-label join-port-label-right">right</span>
+        </>
+      )}
       <span className="data-node__kind">{data.kind}</span>
       <strong>{data.label}</strong>
       {data.status && data.status !== 'idle' && (
@@ -172,7 +203,7 @@ function CanvasSurface() {
           source: previousTerminal.id,
           sourceHandle: 'out',
           target: nodeId,
-          targetHandle: 'in',
+          targetHandle: template.kind === 'combine.join' ? 'left' : 'in',
         });
       }
     },

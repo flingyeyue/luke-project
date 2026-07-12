@@ -24,6 +24,12 @@ const configs: Partial<Record<NodeKind, unknown>> = {
     groupBy: ['region'],
     aggregates: [{ operation: 'count', outputName: 'Rows' }],
   },
+  'combine.join': {
+    joinType: 'left',
+    leftKeys: ['customer-id'],
+    rightKeys: ['id'],
+    rightColumnPrefix: 'customer.',
+  },
 };
 
 const node = (kind: NodeKind, config: unknown): PipelineNode => ({
