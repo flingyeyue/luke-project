@@ -25,7 +25,11 @@ export async function parseXlsxBuffer(
   config: XlsxInputConfig,
 ): Promise<ParsedSource> {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
+  try {
+    await workbook.xlsx.load(buffer);
+  } catch {
+    return failure('The XLSX source is invalid or corrupted.');
+  }
   const worksheet = config.sheetName
     ? workbook.getWorksheet(config.sheetName)
     : workbook.worksheets[0];

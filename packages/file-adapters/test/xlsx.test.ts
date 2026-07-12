@@ -62,6 +62,22 @@ describe('parseXlsxBuffer', () => {
       ).diagnostics[0],
     ).toMatchObject({ code: 'SOURCE_PARSE_FAILED' });
   });
+
+  it('turns a corrupted workbook into a source diagnostic', async () => {
+    const result = await parseXlsxBuffer(
+      new TextEncoder().encode('not an xlsx archive').buffer,
+      { sourceId: 'broken', sheetName: '', headerRow: 1 },
+    );
+
+    expect(result.batch.rows).toEqual([]);
+    expect(result.diagnostics).toEqual([
+      {
+        code: 'SOURCE_PARSE_FAILED',
+        severity: 'error',
+        message: 'The XLSX source is invalid or corrupted.',
+      },
+    ]);
+  });
 });
 
 describe('exportXlsx', () => {

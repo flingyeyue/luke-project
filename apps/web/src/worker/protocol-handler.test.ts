@@ -160,6 +160,38 @@ describe('ProtocolHandler', () => {
     ]);
   });
 
+  it('stops after an in-flight source read is cancelled', async () => {
+    const handler = new ProtocolHandler(() => fixedTime);
+    let finishRead: ((text: string) => void) | undefined;
+    const file = new File(['unused'], 'slow.csv');
+    file.text = () =>
+      new Promise<string>((resolve) => {
+        finishRead = resolve;
+      });
+    const run = handler.handle({
+      type: 'run',
+      runId: 'run-1',
+      project: project([csvNode]),
+      sources: [
+        {
+          sourceId: 'orders',
+          displayName: file.name,
+          file,
+          size: file.size,
+          lastModified: file.lastModified,
+        },
+      ],
+    });
+
+    expect(await handler.handle({ type: 'cancel', runId: 'run-1' })).toEqual([
+      { type: 'run-cancelled', runId: 'run-1', finishedAt: fixedTime },
+    ]);
+    finishRead?.('region,total\nNorth,12');
+    expect(await run).toEqual([
+      { type: 'run-cancelled', runId: 'run-1', finishedAt: fixedTime },
+    ]);
+  });
+
   it('rejects malformed messages without emitting invalid events', async () => {
     const handler = new ProtocolHandler(() => fixedTime);
     expect(await handler.handle({ type: 'preview', limit: 1001 })).toEqual([]);
