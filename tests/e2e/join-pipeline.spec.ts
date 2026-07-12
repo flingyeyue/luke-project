@@ -29,7 +29,7 @@ test('builds and runs a two-source order and region join', async ({ page }) => {
   });
 
   await page.getByRole('button', { name: /关联 combine\.join/u }).click();
-  await page.locator('.data-node').filter({ hasText: 'combine.join' }).click();
+  await expect(page.getByLabel('节点配置')).toContainText('combine.join');
   await page.getByLabel('配置 JSON').fill(
     JSON.stringify({
       joinType: 'inner',

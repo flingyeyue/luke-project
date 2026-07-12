@@ -105,7 +105,13 @@ export const useCanvasStore = create<CanvasState>((set) => ({
     }),
   addNode: (node) =>
     set((state) =>
-      commit(state, { nodes: [...state.nodes, node], edges: state.edges }),
+      commit(state, {
+        nodes: [
+          ...state.nodes.map((item) => ({ ...item, selected: false })),
+          { ...node, selected: true },
+        ],
+        edges: state.edges,
+      }),
     ),
   updateNodeConfig: (nodeId, config) =>
     set((state) =>

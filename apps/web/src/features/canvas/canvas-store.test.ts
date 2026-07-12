@@ -32,7 +32,18 @@ describe('canvas store', () => {
     expect(useCanvasStore.getState().nodes).toHaveLength(0);
 
     useCanvasStore.getState().redo();
-    expect(useCanvasStore.getState().nodes).toEqual([node]);
+    expect(useCanvasStore.getState().nodes).toEqual([
+      { ...node, selected: true },
+    ]);
+  });
+
+  it('selects only the most recently added node', () => {
+    useCanvasStore.getState().addNode(node);
+    useCanvasStore.getState().addNode({ ...node, id: 'node-2' });
+
+    expect(
+      useCanvasStore.getState().nodes.map((item) => item.selected),
+    ).toEqual([false, true]);
   });
 
   it('connects nodes and clears future history after a new change', () => {

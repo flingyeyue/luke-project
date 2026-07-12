@@ -171,9 +171,26 @@
 @media (max-width: 720px) {
   .canvas-workspace {
     grid-template-columns: 1fr;
+    grid-template-rows: 92px minmax(0, 1fr);
   }
 
   .canvas-library {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px;
+    border-right: 0;
+    border-bottom: 1px solid #d8ddd9;
+  }
+
+  .canvas-library h2 {
     display: none;
+  }
+
+  .node-template {
+    min-width: 150px;
+    height: 70px;
+    margin: 0;
   }
 }

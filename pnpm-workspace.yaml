@@ -2,6 +2,9 @@ packages:
   - apps/*
   - packages/*
 
+overrides:
+  uuid: 11.1.1
+
 minimumReleaseAgeExclude:
   - eslint@10.7.0
 
