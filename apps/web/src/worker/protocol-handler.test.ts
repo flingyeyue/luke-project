@@ -81,6 +81,77 @@ describe('ProtocolHandler', () => {
     );
   });
 
+  it('joins two independently bound CSV inputs by explicit ports', async () => {
+    const handler = new ProtocolHandler(() => fixedTime);
+    const rightNode = {
+      ...csvNode,
+      id: 'csv-2',
+      label: 'Regions',
+      config: { ...csvNode.config, sourceId: 'regions' },
+    };
+    const joinNode = {
+      id: 'join-1',
+      kind: 'combine.join' as const,
+      label: 'Orders with regions',
+      position: { x: 200, y: 0 },
+      config: {
+        joinType: 'inner' as const,
+        leftKeys: ['region-2'],
+        rightKeys: ['region-1'],
+        rightColumnPrefix: 'region.',
+      },
+    };
+    const orders = new File(
+      ['order_id,region,total\nORD-1,North,12\nORD-2,South,8'],
+      'orders.csv',
+    );
+    const regions = new File(
+      ['region,manager\nNorth,Ada\nWest,Lin'],
+      'regions.csv',
+    );
+    const events = await handler.handle({
+      type: 'run',
+      runId: 'run-join',
+      project: {
+        ...project(),
+        nodes: [csvNode, rightNode, joinNode],
+        edges: [
+          {
+            id: 'left',
+            source: { nodeId: 'csv-1', portId: 'out' },
+            target: { nodeId: 'join-1', portId: 'left' },
+          },
+          {
+            id: 'right',
+            source: { nodeId: 'csv-2', portId: 'out' },
+            target: { nodeId: 'join-1', portId: 'right' },
+          },
+        ],
+      },
+      sources: [binding('orders', orders), binding('regions', regions)],
+    });
+
+    expect(events.at(-1)).toMatchObject({
+      type: 'run-completed',
+      summary: { status: 'succeeded' },
+    });
+    const preview = await handler.handle({
+      type: 'preview',
+      requestId: 'preview-join',
+      runId: 'run-join',
+      nodeId: 'join-1',
+      offset: 0,
+      limit: 10,
+    });
+    expect(preview[0]).toMatchObject({
+      type: 'preview-result',
+      batch: {
+        rows: [['ORD-1', 'North', 12, 'North', 'Ada']],
+        totalRows: 1,
+      },
+    });
+  });
+
   it('reports a missing source on the input node', async () => {
     const handler = new ProtocolHandler(() => fixedTime);
     const events = await handler.handle({
@@ -188,6 +259,7 @@ describe('ProtocolHandler', () => {
     ]);
     finishRead?.('region,total\nNorth,12');
     expect(await run).toEqual([
+      { type: 'run-started', runId: 'run-1', startedAt: fixedTime },
       { type: 'run-cancelled', runId: 'run-1', finishedAt: fixedTime },
     ]);
   });
@@ -197,3 +269,13 @@ describe('ProtocolHandler', () => {
     expect(await handler.handle({ type: 'preview', limit: 1001 })).toEqual([]);
   });
 });
+
+function binding(sourceId: string, file: File) {
+  return {
+    sourceId,
+    displayName: file.name,
+    file,
+    size: file.size,
+    lastModified: file.lastModified,
+  };
+}

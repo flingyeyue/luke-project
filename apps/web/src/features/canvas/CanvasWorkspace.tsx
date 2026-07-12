@@ -181,9 +181,9 @@ function CanvasSurface() {
       position: { x: number; y: number },
     ) => {
       const nodeId = crypto.randomUUID();
-      const previousTerminal = [...nodes]
+      const previousTerminals = [...nodes]
         .reverse()
-        .find(
+        .filter(
           (node) =>
             !edges.some((edge) => edge.source === node.id) &&
             !node.data.kind.startsWith('output.'),
@@ -198,12 +198,22 @@ function CanvasSurface() {
           config: structuredClone(template.config),
         },
       });
-      if (previousTerminal && !template.kind.startsWith('input.')) {
+      const connectionSources =
+        template.kind === 'combine.join'
+          ? previousTerminals.slice(0, 2).reverse()
+          : previousTerminals.slice(0, 1);
+      for (const [index, previousTerminal] of connectionSources.entries()) {
+        if (template.kind.startsWith('input.')) break;
         useCanvasStore.getState().connect({
           source: previousTerminal.id,
           sourceHandle: 'out',
           target: nodeId,
-          targetHandle: template.kind === 'combine.join' ? 'left' : 'in',
+          targetHandle:
+            template.kind === 'combine.join'
+              ? index === 0
+                ? 'left'
+                : 'right'
+              : 'in',
         });
       }
     },

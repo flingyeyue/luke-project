@@ -1,6 +1,7 @@
 import {
   type DataBatch,
   type Diagnostic,
+  type NodeConfigByKind,
   type PipelineProject,
   type SourceBinding,
   type WorkerCommand,
@@ -33,7 +34,7 @@ export function CsvRunControls({
   const runRef = useRef<{ runId: string; nodeId: string } | undefined>(
     undefined,
   );
-  const [source, setSource] = useState<SourceBinding>();
+  const [sources, setSources] = useState<SourceBinding[]>([]);
   const [status, setStatus] = useState('等待文件');
 
   useEffect(
@@ -89,7 +90,14 @@ export function CsvRunControls({
   };
 
   const selectFile = (file: File) => {
-    const existing = nodes.find((node) => node.data.kind === 'input.csv');
+    const boundSourceIds = new Set(sources.map((item) => item.sourceId));
+    const existing = nodes.find(
+      (node) =>
+        node.data.kind === 'input.csv' &&
+        !boundSourceIds.has(
+          (node.data.config as NodeConfigByKind['input.csv']).sourceId,
+        ),
+    );
     const nodeId = existing?.id ?? crypto.randomUUID();
     const sourceId = `source-${nodeId}`;
     if (existing) {
@@ -116,20 +124,23 @@ export function CsvRunControls({
         },
       });
     }
-    setSource({
-      sourceId,
-      displayName: file.name,
-      file,
-      size: file.size,
-      lastModified: file.lastModified,
-    });
+    setSources((current) => [
+      ...current.filter((item) => item.sourceId !== sourceId),
+      {
+        sourceId,
+        displayName: file.name,
+        file,
+        size: file.size,
+        lastModified: file.lastModified,
+      },
+    ]);
     setStatus(`${file.name} · ${file.size} B`);
     onBatchChange(undefined);
     onDiagnosticsChange([]);
   };
 
   const run = () => {
-    if (!source) return;
+    if (sources.length === 0) return;
     const csvNode = useCanvasStore
       .getState()
       .nodes.find((node) => node.data.kind === 'input.csv');
@@ -170,7 +181,7 @@ export function CsvRunControls({
       type: 'run',
       runId,
       project,
-      sources: [source],
+      sources,
     } satisfies WorkerCommand);
   };
 
@@ -188,7 +199,7 @@ export function CsvRunControls({
           type="file"
         />
       </label>
-      <button disabled={!source} onClick={run} type="button">
+      <button disabled={sources.length === 0} onClick={run} type="button">
         <Play aria-hidden="true" size={15} />
         运行
       </button>

@@ -2,13 +2,18 @@ import {
   type DataBatch,
   type Diagnostic,
   type NodeConfigByKind,
+  type PipelineNode,
   type NodeRunResult,
   type RunSummary,
   type WorkerEvent,
   workerCommandSchema,
 } from '@luke/contracts';
 import { parseCsvFile } from '@luke/file-adapters/csv';
-import { executeTransformNode, validateGraph } from '@luke/pipeline-engine';
+import {
+  executeJoin,
+  executeTransformNode,
+  validateGraph,
+} from '@luke/pipeline-engine';
 
 type Clock = () => string;
 
@@ -128,99 +133,110 @@ export class ProtocolHandler {
         { type: 'run-failed', runId: command.runId, diagnostics: graphErrors },
       ];
     }
-    const node = command.project.nodes.find(
-      (candidate) => candidate.kind === 'input.csv',
-    );
-    if (!node) {
+    const inputNodes = validation.order
+      .map((nodeId) =>
+        command.project.nodes.find((candidate) => candidate.id === nodeId),
+      )
+      .filter(
+        (node): node is PipelineNode & { kind: 'input.csv' } =>
+          node?.kind === 'input.csv',
+      );
+    if (inputNodes.length === 0) {
       return this.#failedRun(
         command.runId,
         startedAt,
         diagnostic('PIPELINE_EMPTY', 'The pipeline does not contain a node.'),
       );
     }
-    const config = node.config as NodeConfigByKind['input.csv'];
-    const source = command.sources.find(
-      (candidate) => candidate.sourceId === config.sourceId,
-    );
-    if (!source) {
-      return this.#failedRun(
-        command.runId,
-        startedAt,
-        diagnostic(
+    const events: WorkerEvent[] = [
+      { type: 'run-started', runId: command.runId, startedAt },
+    ];
+    const batches = new Map<string, DataBatch>();
+    const nodeResults: NodeRunResult[] = [];
+
+    for (const node of inputNodes) {
+      const config = node.config as NodeConfigByKind['input.csv'];
+      const source = command.sources.find(
+        (candidate) => candidate.sourceId === config.sourceId,
+      );
+      if (!source) {
+        const item = diagnostic(
           'SOURCE_NOT_FOUND',
           `Select a CSV file for source ${config.sourceId}.`,
           node.id,
-        ),
-      );
-    }
+        );
+        return [
+          ...events,
+          { type: 'run-failed', runId: command.runId, diagnostics: [item] },
+        ];
+      }
 
-    let parsed: Awaited<ReturnType<typeof parseCsvFile>>;
-    try {
-      parsed = await parseCsvFile(source.file, config);
-    } catch (error) {
-      return this.#failedRun(
-        command.runId,
-        startedAt,
-        diagnostic(
+      let parsed: Awaited<ReturnType<typeof parseCsvFile>>;
+      try {
+        parsed = await parseCsvFile(source.file, config);
+      } catch (error) {
+        const item = diagnostic(
           'SOURCE_READ_FAILED',
           error instanceof Error
             ? error.message
             : 'The CSV source could not be read.',
           node.id,
-        ),
-      );
-    }
-    if (this.#cancelledRuns.has(command.runId)) {
-      return [
-        {
-          type: 'run-cancelled',
-          runId: command.runId,
-          finishedAt: this.#clock(),
-        },
-      ];
-    }
-    const diagnostics: Diagnostic[] = parsed.diagnostics.map((item) => ({
-      ...item,
-      nodeId: node.id,
-    }));
-    const hasErrors = diagnostics.some((item) => item.severity === 'error');
-    const status = hasErrors
-      ? 'failed'
-      : diagnostics.length > 0
-        ? 'warning'
-        : 'succeeded';
-    const result: NodeRunResult = {
-      nodeId: node.id,
-      status,
-      inputRows: parsed.batch.totalRows ?? parsed.batch.rows.length,
-      outputRows: parsed.batch.totalRows ?? parsed.batch.rows.length,
-      durationMs: 0,
-      diagnostics,
-    };
-    const events: WorkerEvent[] = [
-      { type: 'run-started', runId: command.runId, startedAt },
-      {
-        type: 'node-progress',
-        runId: command.runId,
+        );
+        return [
+          ...events,
+          { type: 'run-failed', runId: command.runId, diagnostics: [item] },
+        ];
+      }
+      if (this.#cancelledRuns.has(command.runId)) {
+        return [
+          ...events,
+          {
+            type: 'run-cancelled',
+            runId: command.runId,
+            finishedAt: this.#clock(),
+          },
+        ];
+      }
+      const diagnostics: Diagnostic[] = parsed.diagnostics.map((item) => ({
+        ...item,
         nodeId: node.id,
-        progress: 1,
-        message: 'CSV parsed',
-      },
-      { type: 'node-result', runId: command.runId, result },
-    ];
-
-    if (hasErrors) {
-      return [
-        ...events,
-        { type: 'run-failed', runId: command.runId, diagnostics },
-      ];
+      }));
+      const hasErrors = diagnostics.some((item) => item.severity === 'error');
+      const result: NodeRunResult = {
+        nodeId: node.id,
+        status: hasErrors
+          ? 'failed'
+          : diagnostics.length > 0
+            ? 'warning'
+            : 'succeeded',
+        inputRows: parsed.batch.totalRows ?? parsed.batch.rows.length,
+        outputRows: parsed.batch.totalRows ?? parsed.batch.rows.length,
+        durationMs: 0,
+        diagnostics,
+      };
+      events.push(
+        {
+          type: 'node-progress',
+          runId: command.runId,
+          nodeId: node.id,
+          progress: 1,
+          message: 'CSV parsed',
+        },
+        { type: 'node-result', runId: command.runId, result },
+      );
+      nodeResults.push(result);
+      if (hasErrors) {
+        return [
+          ...events,
+          { type: 'run-failed', runId: command.runId, diagnostics },
+        ];
+      }
+      batches.set(node.id, parsed.batch);
+      this.#previews.set(`${command.runId}:${node.id}`, parsed.batch);
     }
-    const batches = new Map<string, DataBatch>([[node.id, parsed.batch]]);
-    const nodeResults: NodeRunResult[] = [result];
-    this.#previews.set(`${command.runId}:${node.id}`, parsed.batch);
 
     for (const nodeId of validation.order) {
-      if (nodeId === node.id) continue;
+      if (inputNodes.some((node) => node.id === nodeId)) continue;
       const currentNode = command.project.nodes.find(
         (candidate) => candidate.id === nodeId,
       );
@@ -235,11 +251,12 @@ export class ProtocolHandler {
           },
         ];
       }
-      const incoming = command.project.edges.find(
+      const incoming = command.project.edges.filter(
         (edge) => edge.target.nodeId === nodeId,
       );
-      const inputBatch = incoming
-        ? batches.get(incoming.source.nodeId)
+      const firstIncoming = incoming[0];
+      const inputBatch = firstIncoming
+        ? batches.get(firstIncoming.source.nodeId)
         : undefined;
       if (!inputBatch) {
         const item = diagnostic(
@@ -253,11 +270,23 @@ export class ProtocolHandler {
         ];
       }
 
+      const leftEdge = incoming.find((edge) => edge.target.portId === 'left');
+      const rightEdge = incoming.find((edge) => edge.target.portId === 'right');
+      const rightBatch = rightEdge
+        ? batches.get(rightEdge.source.nodeId)
+        : undefined;
       const transformed =
-        currentNode.kind.startsWith('transform.') ||
-        currentNode.kind === 'aggregate.group'
-          ? executeTransformNode(currentNode, inputBatch)
-          : { batch: inputBatch, diagnostics: [] };
+        currentNode.kind === 'combine.join' && leftEdge && rightBatch
+          ? executeJoin(
+              batches.get(leftEdge.source.nodeId) ?? inputBatch,
+              rightBatch,
+              currentNode.config as NodeConfigByKind['combine.join'],
+              currentNode.id,
+            )
+          : currentNode.kind.startsWith('transform.') ||
+              currentNode.kind === 'aggregate.group'
+            ? executeTransformNode(currentNode, inputBatch)
+            : { batch: inputBatch, diagnostics: [] };
       const failed = transformed.diagnostics.some(
         (item) => item.severity === 'error',
       );
