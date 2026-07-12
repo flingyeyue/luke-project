@@ -4,7 +4,10 @@ A browser-only visual workspace for importing, transforming, previewing, and exp
 
 ## Status
 
-M0 engineering baseline: workspace, shared contracts, Worker protocol, tests, and fixtures.
+M4 release candidate. The browser application supports visual CSV pipelines,
+core transforms, grouped aggregation, two-source joins, project save/recovery,
+CSV/JSON/XLSX adapters, virtualized previews, and local export. No backend or
+database is required.
 
 ## Requirements
 
@@ -20,15 +23,42 @@ pnpm install --frozen-lockfile
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm test:e2e
+pnpm test:e2e:all
+pnpm test:performance
+pnpm audit --prod
 pnpm build
 pnpm dev
 ```
+
+Install the Playwright browser matrix and host dependencies before the first
+`test:e2e:all` run:
+
+```bash
+pnpm exec playwright install
+sudo pnpm exec playwright install-deps
+```
+
+## Demonstration
+
+See [docs/demo.md](docs/demo.md) for the repeatable single-source and two-source
+Join demonstrations, expected results, and current limitations.
+
+The latest verified baseline is 107 unit/component tests, 12 E2E scenarios
+across desktop Chromium, Firefox, WebKit, and mobile Chromium, plus one dedicated
+100,000-row Chromium performance benchmark. These numbers are evidence from the
+2026-07-12 release review, not permanent expectations; use the commands above to
+produce current results.
 
 ## Workspace
 
 - `apps/web`: React and Vite browser application.
 - `packages/contracts`: TypeScript and Zod shared contracts.
+- `packages/file-adapters`: CSV, JSON, XLSX, and project-file adapters.
+- `packages/pipeline-engine`: graph validation, transforms, Join, and caching.
 - `packages/test-fixtures`: synthetic CSV and JSON fixtures.
+- `tests/e2e`: browser workflows.
+- `tests/performance`: deterministic browser performance benchmark.
 - `docs/contracts.md`: project copy of the shared contract.
 - `scripts/check-contract-sync.sh`: verifies both contract copies match.
 
