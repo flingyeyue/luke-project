@@ -17,6 +17,7 @@
     "test": "pnpm --recursive --if-present run test",
     "test:e2e": "playwright test --project=chromium",
     "test:e2e:all": "playwright test",
+    "test:performance": "playwright test --config=playwright.performance.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && pnpm --recursive --if-present run typecheck"
   },
   "devDependencies": {
