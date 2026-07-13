@@ -61,7 +61,12 @@ const nodeTemplates = [
     label: '计算字段',
     config: {
       outputName: 'Calculated',
-      expression: { type: 'literal', value: null },
+      expression: {
+        type: 'binary',
+        operator: 'add',
+        left: { type: 'column', columnId: 'column-1' },
+        right: { type: 'literal', value: 0 },
+      },
     },
   },
   {

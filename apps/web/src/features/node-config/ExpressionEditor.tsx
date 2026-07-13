@@ -9,23 +9,23 @@ interface ExpressionEditorProps {
 const expressionTypes: { value: Expression['type']; label: string }[] = [
   { value: 'literal', label: '固定值' },
   { value: 'column', label: '字段' },
-  { value: 'unary', label: '单目运算' },
-  { value: 'binary', label: '双目运算' },
+  { value: 'unary', label: '单项判断（取反/为空）' },
+  { value: 'binary', label: '两项运算（加减乘除/比较）' },
 ];
 
 const binaryOperators = [
-  ['eq', '等于'],
-  ['neq', '不等于'],
-  ['gt', '大于'],
-  ['gte', '大于等于'],
-  ['lt', '小于'],
-  ['lte', '小于等于'],
+  ['add', '加（+）'],
+  ['subtract', '减（-）'],
+  ['multiply', '乘（×）'],
+  ['divide', '除（÷）'],
+  ['eq', '等于（=）'],
+  ['neq', '不等于（≠）'],
+  ['gt', '大于（>）'],
+  ['gte', '大于等于（≥）'],
+  ['lt', '小于（<）'],
+  ['lte', '小于等于（≤）'],
   ['and', '并且'],
   ['or', '或者'],
-  ['add', '加'],
-  ['subtract', '减'],
-  ['multiply', '乘'],
-  ['divide', '除'],
 ] as const;
 
 export function ExpressionEditor({

@@ -18,3 +18,22 @@ test('renders the workspace shell', async ({ page }) => {
   await expect(page.getByLabel('节点配置')).toBeVisible();
   await expect(page.getByRole('region', { name: '运行数据' })).toBeVisible();
 });
+
+test('creates a calculated field with visible arithmetic controls', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page
+    .getByRole('button', { name: /计算字段 transform\.derive/u })
+    .click();
+
+  await expect(page.getByLabel('计算表达式类型')).toHaveValue('binary');
+  await expect(page.getByLabel('计算表达式运算符')).toHaveValue('add');
+  await page.getByLabel('计算表达式运算符').selectOption('multiply');
+  await page.getByRole('button', { name: '应用', exact: true }).click();
+  await page.getByRole('button', { name: 'JSON', exact: true }).click();
+
+  await expect(page.getByLabel('配置 JSON')).toHaveValue(
+    /"operator": "multiply"/u,
+  );
+});
