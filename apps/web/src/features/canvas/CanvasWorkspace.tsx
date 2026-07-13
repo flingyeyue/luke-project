@@ -54,7 +54,14 @@ const nodeTemplates = [
   {
     kind: 'transform.filter',
     label: '筛选',
-    config: { predicate: { type: 'literal', value: true } },
+    config: {
+      predicate: {
+        type: 'binary',
+        operator: 'eq',
+        left: { type: 'column', columnId: 'column-1' },
+        right: { type: 'literal', value: '' },
+      },
+    },
   },
   {
     kind: 'transform.derive',
