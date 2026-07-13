@@ -24,6 +24,11 @@ test('imports a CSV when crypto.randomUUID is unavailable', async ({
   await page.getByLabel('选择 CSV').setInputFiles(fixture);
 
   await expect(page.getByText('orders-small.csv · 523 B')).toBeVisible();
+  await expect(page.getByText('10 行', { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('columnheader', { name: 'order_id' }),
+  ).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'ORD-1001' })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 
@@ -34,6 +39,7 @@ test('imports a CSV through the worker and previews its data', async ({
   await page.getByLabel('选择 CSV').setInputFiles(fixture);
 
   await expect(page.getByText('orders-small.csv · 523 B')).toBeVisible();
+  await expect(page.getByText('10 行', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /筛选 transform\.filter/u }).click();
   await page.getByLabel('筛选条件类型').selectOption('binary');
   await page.getByLabel('筛选条件左值类型').selectOption('column');
@@ -66,6 +72,13 @@ test('imports a CSV through the worker and previews its data', async ({
   ).toBeVisible();
   await expect(page.getByRole('cell', { name: 'ORD-1001' })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'ORD-1010' })).toBeVisible();
+  await page
+    .locator('.react-flow__node')
+    .filter({ hasText: 'orders-small.csv' })
+    .click();
+  await expect(page.getByText('10 行', { exact: true })).toBeVisible();
+  await page.locator('.react-flow__node').filter({ hasText: '筛选' }).click();
+  await expect(page.getByText('7 行', { exact: true })).toBeVisible();
   await page.getByRole('tab', { name: '字段' }).click();
   const runtimePanel = page.getByLabel('运行数据', { exact: true });
   await expect(runtimePanel.getByText('amount', { exact: true })).toBeVisible();

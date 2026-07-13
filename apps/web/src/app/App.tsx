@@ -46,6 +46,7 @@ export function App() {
               next.length === 0 ? [] : [...current, ...next],
             )
           }
+          selectedNodeId={selectedNode?.id}
         />
         <button
           className="export-command"
