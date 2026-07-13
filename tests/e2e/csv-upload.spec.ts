@@ -47,6 +47,20 @@ test('imports a CSV through the worker and previews its data', async ({
   await expect(page.getByText('完成', { exact: true })).toBeVisible();
   await expect(page.getByText('7 行', { exact: true })).toBeVisible();
   await expect(page.getByText('已加载 7 行')).toBeVisible();
+  const tableWidths = await page.locator('.virtual-table').evaluate((table) => {
+    const header = table.querySelector('.virtual-table__header');
+    const row = table.querySelector('.virtual-table__row');
+    const width = (element: Element | null) =>
+      element?.getBoundingClientRect().width ?? 0;
+    return {
+      header: width(header),
+      row: width(row),
+      headerCell: width(header?.firstElementChild ?? null),
+      rowCell: width(row?.firstElementChild ?? null),
+    };
+  });
+  expect(tableWidths.row).toBe(tableWidths.header);
+  expect(tableWidths.rowCell).toBe(tableWidths.headerCell);
   await expect(
     page.getByRole('columnheader', { name: 'order_id' }),
   ).toBeVisible();
