@@ -8,6 +8,25 @@ const fixture = fileURLToPath(
   ),
 );
 
+test('imports a CSV when crypto.randomUUID is unavailable', async ({
+  page,
+}) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.addInitScript(() => {
+    Object.defineProperty(globalThis.crypto, 'randomUUID', {
+      configurable: true,
+      value: undefined,
+    });
+  });
+
+  await page.goto('/');
+  await page.getByLabel('选择 CSV').setInputFiles(fixture);
+
+  await expect(page.getByText('orders-small.csv · 523 B')).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
 test('imports a CSV through the worker and previews its data', async ({
   page,
 }) => {

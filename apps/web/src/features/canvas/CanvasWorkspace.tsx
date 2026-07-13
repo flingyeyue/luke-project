@@ -14,6 +14,7 @@ import { useCallback, useRef, type DragEvent } from 'react';
 import '@xyflow/react/dist/style.css';
 import './canvas.css';
 
+import { createId } from '../../shared/create-id';
 import { type CanvasNode, useCanvasStore } from './canvas-store';
 
 const dragMime = 'application/x-luke-node-kind';
@@ -180,7 +181,7 @@ function CanvasSurface() {
       template: (typeof nodeTemplates)[number],
       position: { x: number; y: number },
     ) => {
-      const nodeId = crypto.randomUUID();
+      const nodeId = createId();
       const previousTerminals = [...nodes]
         .reverse()
         .filter(

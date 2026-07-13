@@ -12,6 +12,7 @@ import { FileUp, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useCanvasStore } from '../canvas/canvas-store';
+import { createId } from '../../shared/create-id';
 import { createPipelineWorker } from '../../worker/create-pipeline-worker';
 
 interface CsvRunControlsProps {
@@ -76,7 +77,7 @@ export function CsvRunControls({
         setStatus(event.summary.status === 'warning' ? '完成，有警告' : '完成');
         worker.postMessage({
           type: 'preview',
-          requestId: crypto.randomUUID(),
+          requestId: createId(),
           runId: runRef.current.runId,
           nodeId: runRef.current.nodeId,
           offset: 0,
@@ -98,7 +99,7 @@ export function CsvRunControls({
           (node.data.config as NodeConfigByKind['input.csv']).sourceId,
         ),
     );
-    const nodeId = existing?.id ?? crypto.randomUUID();
+    const nodeId = existing?.id ?? createId();
     const sourceId = `source-${nodeId}`;
     if (existing) {
       updateNodeConfig(nodeId, {
@@ -166,7 +167,7 @@ export function CsvRunControls({
         target: { nodeId: edge.target, portId: edge.targetHandle ?? 'in' },
       })),
     };
-    const runId = crypto.randomUUID();
+    const runId = createId();
     const outgoing = new Set(project.edges.map((edge) => edge.source.nodeId));
     const previewNode =
       [...project.nodes].reverse().find((node) => !outgoing.has(node.id)) ??
