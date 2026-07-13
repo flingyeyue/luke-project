@@ -58,6 +58,7 @@ export function DataPanel({
             {batch?.schema.columns.map((column) => (
               <li key={column.id}>
                 <strong>{column.name}</strong>
+                <code>{column.id}</code>
                 <code>{column.type}</code>
                 <span>{column.nullable ? '可空' : '必填'}</span>
               </li>

@@ -30,14 +30,9 @@ test('builds and runs a two-source order and region join', async ({ page }) => {
 
   await page.getByRole('button', { name: /关联 combine\.join/u }).click();
   await expect(page.getByLabel('节点配置')).toContainText('combine.join');
-  await page.getByLabel('配置 JSON').fill(
-    JSON.stringify({
-      joinType: 'inner',
-      leftKeys: ['region-3'],
-      rightKeys: ['region-1'],
-      rightColumnPrefix: 'region.',
-    }),
-  );
+  await page.getByLabel('左侧字段 ID').fill('region-3');
+  await page.getByLabel('右侧字段 ID').fill('region-1');
+  await page.getByLabel('右侧字段前缀').fill('region.');
   await page.getByRole('button', { name: '应用' }).click();
   await expect(page.getByText('配置已应用', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /CSV 输出 output\.csv/u }).click();

@@ -76,7 +76,11 @@ export function App() {
       </header>
       <div className="workspace-editor">
         <CanvasWorkspace />
-        <NodeConfigPanel node={pipelineNode} onChange={updateNodeConfig} />
+        <NodeConfigPanel
+          columns={batch?.schema.columns}
+          node={pipelineNode}
+          onChange={updateNodeConfig}
+        />
       </div>
       <DataPanel batch={batch} diagnostics={diagnostics} events={events} />
     </main>

@@ -1,6 +1,6 @@
 .node-config-panel {
   display: grid;
-  grid-template-rows: auto auto minmax(180px, 1fr) auto;
+  grid-template-rows: auto auto minmax(180px, 1fr) auto auto;
   gap: 10px;
   min-width: 260px;
   min-height: 0;
@@ -21,8 +21,7 @@
   font-size: 15px;
 }
 
-.node-config-panel header span,
-.node-config-panel label {
+.node-config-panel header span {
   color: #65736a;
   font-size: 11px;
 }
@@ -34,6 +33,41 @@
   border: 1px solid #28583d;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.config-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 2px;
+  background: #edf1ee;
+  border: 1px solid #d3dad5;
+  border-radius: 5px;
+}
+
+.node-config-panel .config-mode-switch button {
+  padding: 6px 10px;
+  color: #526158;
+  background: transparent;
+  border: 0;
+}
+
+.node-config-panel .config-mode-switch button[aria-pressed='true'] {
+  color: #1f4f35;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(27 48 36 / 12%);
+}
+
+.config-editor-body {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.json-config-field {
+  display: grid;
+  gap: 6px;
+  color: #65736a;
+  font-size: 11px;
 }
 
 .node-config-panel textarea {
@@ -48,6 +82,121 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   line-height: 1.55;
+}
+
+.visual-config-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.visual-config-fields > label,
+.rule-item > label,
+.expression-editor > label {
+  display: grid;
+  gap: 5px;
+  color: #536158;
+  font-size: 11px;
+}
+
+.node-config-panel input:not([type='checkbox']),
+.node-config-panel select {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 9px;
+  color: #243129;
+  background: #ffffff;
+  border: 1px solid #cbd3cd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.node-config-panel input:focus,
+.node-config-panel select:focus,
+.node-config-panel textarea:focus {
+  border-color: #3d7656;
+  outline: 2px solid rgb(61 118 86 / 18%);
+  outline-offset: 0;
+}
+
+.checkbox-field {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 8px;
+  color: #38463d;
+  font-size: 12px;
+}
+
+.checkbox-field input {
+  width: 16px;
+  height: 16px;
+  accent-color: #2f6546;
+}
+
+.rule-list {
+  display: grid;
+  gap: 9px;
+}
+
+.rule-list > header {
+  align-items: center;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e0e5e1;
+}
+
+.rule-list h3 {
+  margin: 0;
+  color: #39463e;
+  font-size: 12px;
+}
+
+.node-config-panel .icon-button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  place-items: center;
+  color: #315d43;
+  background: #f8faf8;
+  border: 1px solid #cbd4ce;
+}
+
+.node-config-panel .icon-button:hover {
+  background: #eaf2ed;
+}
+
+.rule-item,
+.expression-editor {
+  position: relative;
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #d8ded9;
+  border-radius: 5px;
+}
+
+.rule-item legend,
+.expression-editor legend {
+  padding: 0 4px;
+  color: #65736a;
+  font-size: 11px;
+}
+
+.node-config-panel .rule-remove {
+  position: absolute;
+  top: -8px;
+  right: 7px;
+  width: 25px;
+  height: 25px;
+  color: #8a3737;
+  background: #ffffff;
+}
+
+.expression-editor .expression-editor {
+  background: #f8faf8;
 }
 
 .config-status {

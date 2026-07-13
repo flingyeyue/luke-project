@@ -6,8 +6,8 @@ A browser-only visual workspace for importing, transforming, previewing, and exp
 
 M4 release candidate. The browser application supports visual CSV pipelines,
 core transforms, grouped aggregation, two-source joins, project save/recovery,
-CSV/JSON/XLSX adapters, virtualized previews, and local export. No backend or
-database is required.
+visual and JSON node configuration, CSV/JSON/XLSX adapters, virtualized
+previews, and local export. No backend or database is required.
 
 ## Requirements
 
@@ -44,11 +44,11 @@ sudo pnpm exec playwright install-deps
 See [docs/demo.md](docs/demo.md) for the repeatable single-source and two-source
 Join demonstrations, expected results, and current limitations.
 
-The latest verified baseline is 107 unit/component tests, 12 E2E scenarios
-across desktop Chromium, Firefox, WebKit, and mobile Chromium, plus one dedicated
-100,000-row Chromium performance benchmark. These numbers are evidence from the
-2026-07-12 release review, not permanent expectations; use the commands above to
-produce current results.
+The latest verified baseline is 118 unit/component tests and 16 E2E scenarios
+across desktop Chromium, Firefox, WebKit, and mobile Chromium. The dedicated
+100,000-row Chromium performance benchmark remains available separately. These
+numbers are evidence from the 2026-07-13 configuration editor review, not
+permanent expectations; use the commands above to produce current results.
 
 ## Workspace
 
